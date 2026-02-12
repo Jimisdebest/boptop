@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Media Feed - TikTok/Facebook style</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <h1>AI Media</h1>
+            <button class="saved-btn" id="savedBtn">Opgeslagen</button>
+        </header>
+
+        <div id="feed" class="feed">
+            <!-- Media items worden hier ingeladen via JavaScript -->
+        </div>
+
+        <!-- Popup voor opgeslagen items -->
+        <div id="savedPopup" class="popup">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Opgeslagen media</h2>
+                    <button class="close-btn" id="closePopup">&times;</button>
+                </div>
+                <div id="savedItemsList" class="saved-items-list">
+                    <!-- Opgeslagen items komen hier -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Share popup -->
+        <div id="sharePopup" class="popup">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Deel deze video</h2>
+                    <button class="close-btn" id="closeSharePopup">&times;</button>
+                </div>
+                <div class="share-content">
+                    <p id="shareUrlText" class="share-url"></p>
+                    <div class="share-buttons">
+                        <button id="copyShareLink" class="share-action-btn">📋 Kopieer link</button>
+                        <a id="whatsappShareLink" href="#" target="_blank" class="share-action-btn whatsapp">📱 Deel via WhatsApp</a>
+                        <a id="emailShareLink" href="#" target="_blank" class="share-action-btn email">📧 Deel via Email</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
