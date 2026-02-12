@@ -9,24 +9,9 @@
 // weight: hoe vaker het getoond wordt (1 = normaal, 2 = vaker, 3 = nog vaker)
 // =================================================================
 const mediaDatabase = [
+    
     {
         id: 1,
-        type: 'video',
-        url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-        title: '🌸 AI gegenereerde bloemen',
-        description: 'Prachtige bloemen gemaakt met Stable Diffusion',
-        weight: 1
-    },
-    {
-        id: 2,
-        type: 'video',
-        url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-        title: '🎨 Abstracte kunst',
-        description: 'AI kunst in beweging - generatieve animatie',
-        weight: 1
-    },
-    {
-        id: 3,
         type: 'image',
         url: 'https://picsum.photos/800/1200?random=1',
         title: '🏔️ Digitale landschappen',
@@ -34,43 +19,11 @@ const mediaDatabase = [
         weight: 1
     },
     {
-        id: 4,
-        type: 'image',
-        url: 'https://picsum.photos/800/1200?random=2',
-        title: '🌌 Ruimte kunst',
-        description: 'AI interpretatie van het universum',
-        weight: 1
-    },
-    {
-        id: 5,
+        id: 2,
         type: 'video',
-        url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-        title: '💧 Vloeibare dromen',
-        description: 'Abstracte AI animatie met vloeiende vormen',
-        weight: 1
-    },
-    {
-        id: 6,
-        type: 'image',
-        url: 'https://picsum.photos/800/1200?random=3',
-        title: '🦋 Fantasie wezens',
-        description: 'AI gegenereerde mythische dieren',
-        weight: 1
-    },
-    {
-        id: 7,
-        type: 'video',
-        url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+        url: 'jimisdebest.github.io/tiktok/hoi.mp4',
         title: '🌀 Cyberpunk stad',
-        description: 'AI visie op de toekomst',
-        weight: 1
-    },
-    {
-        id: 8,
-        type: 'video',
-        url: 'hoi.mp4',
-        title: '🌀 Cyberpunk stad',
-        description: 'AI visie op de toekomst',
+        description: 'Iets grappigs',
         weight: 1
     }
 ];
