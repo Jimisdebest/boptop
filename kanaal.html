@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bobtop - Kanaal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-left">
+                <button class="back-btn" id="backBtn">←</button>
+                <h1>bobtop</h1>
+            </div>
+            <div class="header-right">
+                <button class="saved-btn" id="savedBtn">Opgeslagen</button>
+            </div>
+        </header>
+
+        <div class="channel-container">
+            <!-- Channel header -->
+            <div id="channelHeader" class="channel-header">
+                <div class="channel-banner"></div>
+                <div class="channel-info">
+                    <div class="channel-avatar" id="channelAvatar"></div>
+                    <div class="channel-details">
+                        <h2 id="channelName">Kanaal</h2>
+                        <p id="channelStats">0 abonnees</p>
+                    </div>
+                    <div class="channel-actions">
+                        <button id="subscribeBtn" class="subscribe-btn">Abonneren</button>
+                        <button id="shareChannelBtn" class="share-channel-btn">🔗 Deel</button>
+                    </div>
+                </div>
+                <div class="channel-description" id="channelDescription"></div>
+            </div>
+
+            <!-- Channel videos -->
+            <div class="channel-videos-header">
+                <h3>Video's</h3>
+            </div>
+            <div id="channelVideos" class="channel-videos-grid">
+                <!-- Videos worden hier ingeladen -->
+            </div>
+        </div>
+
+        <!-- Popup voor opgeslagen items -->
+        <div id="savedPopup" class="popup">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Opgeslagen</h2>
+                    <button class="close-btn" id="closePopup">&times;</button>
+                </div>
+                <div id="savedItemsList" class="saved-items-list"></div>
+            </div>
+        </div>
+
+        <!-- Share popup -->
+        <div id="sharePopup" class="popup">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Deel</h2>
+                    <button class="close-btn" id="closeSharePopup">&times;</button>
+                </div>
+                <div class="share-content">
+                    <p id="shareUrlText" class="share-url"></p>
+                    <div class="share-buttons">
+                        <button id="copyShareLink" class="share-action-btn">📋 Kopieer link</button>
+                        <a id="whatsappShareLink" href="#" target="_blank" class="share-action-btn whatsapp">📱 Deel via WhatsApp</a>
+                        <a id="emailShareLink" href="#" target="_blank" class="share-action-btn email">📧 Deel via Email</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="kanaal.js"></script>
+</body>
+</html>
