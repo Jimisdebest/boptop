@@ -64,12 +64,18 @@ const mediaDatabase = [
         title: '🌀 Cyberpunk stad',
         description: 'AI visie op de toekomst',
         weight: 1
+    },
+    {
+        id: 8,
+        type: 'video',
+        url: 'hoi.mp4',
+        title: '🌀 Cyberpunk stad',
+        description: 'AI visie op de toekomst',
+        weight: 1
     }
 ];
 
-// ==================== WEBSITE INSTELLINGEN ====================
-const WEBSITE_URL = 'https://jimisdebest.github.io/tiktok/'; // JOUW WEBSITE URL
-// ===============================================================
+const WEBSITE_URL = 'https://jimisdebest.github.io/tiktok/'
 
 // App state
 let feedItems = [];
