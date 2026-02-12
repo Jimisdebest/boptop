@@ -18,9 +18,9 @@ const mediaDatabase = [
     {
         id: 2,
         type: 'video',
-        url: 'jimisdebest.github.io/tiktok/hoi.mp4',
-        title: '🌀 Cyberpunk stad',
-        description: 'Iets grappigs',
+        url: 'hoi.mp4',
+        title: 'HEMA',
+        description: 'Koop nu HEMA regenboogrookworst!',
         weight: 1
     }
 ];
