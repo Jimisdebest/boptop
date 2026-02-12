@@ -12,13 +12,13 @@ html, body {
   scrollbar-width: none;
   -ms-overflow-style: none;
   color: white;
-  overscroll-behavior: none; /* voorkomt rare bounce effecten */
+  overscroll-behavior: none;
 }
 
 body {
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
-  scroll-behavior: smooth; /* voor zachte overgangen */
+  scroll-behavior: smooth;
 }
 
 ::-webkit-scrollbar {
@@ -32,7 +32,6 @@ body {
   width: 100%;
 }
 
-/* elk item vult precies het scherm met perfecte snap */
 .feed-item {
   width: 100%;
   height: 100vh;
@@ -62,7 +61,18 @@ video, img {
   background: #050505;
 }
 
-/* kanaalnaam is nu klikbaar */
+/* Kanaal info */
+.item-info {
+  position: absolute;
+  bottom: 100px;
+  left: 16px;
+  right: 100px;
+  color: white;
+  text-shadow: 0 0 8px rgba(0,0,0,0.7);
+  z-index: 10;
+  pointer-events: none;
+}
+
 .channel-name {
   font-weight: 700;
   font-size: 1.2rem;
@@ -70,6 +80,7 @@ video, img {
   display: flex;
   align-items: center;
   gap: 6px;
+  pointer-events: auto;
 }
 
 .channel-link {
@@ -101,21 +112,6 @@ video, img {
   border: 0.5px solid rgba(255,255,255,0.5);
 }
 
-.item-info {
-  position: absolute;
-  bottom: 100px;
-  left: 16px;
-  right: 100px;
-  color: white;
-  text-shadow: 0 0 8px rgba(0,0,0,0.7);
-  z-index: 10;
-  pointer-events: none;
-}
-
-.channel-name {
-  pointer-events: auto; /* alleen de kanaalnaam is klikbaar */
-}
-
 .title-description {
   font-size: 0.95rem;
   opacity: 0.95;
@@ -123,14 +119,14 @@ video, img {
   margin-top: 4px;
 }
 
-/* ACTION BUTTONS - rechts */
+/* ACTION BUTTONS - rechts met EMOJIS */
 .action-buttons {
   position: absolute;
-  bottom: 120px;
+  bottom: 100px;
   right: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
   z-index: 30;
   pointer-events: auto;
@@ -140,53 +136,220 @@ video, img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(30, 30, 30, 0.8);
+  background: rgba(30, 30, 30, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   padding: 10px 8px;
   border-radius: 30px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.15);
   color: white;
-  fill: white;
   transition: all 0.15s ease;
   cursor: pointer;
   min-width: 64px;
+  font-size: 0.9rem;
 }
 
-.action-btn svg {
-  width: 28px;
-  height: 28px;
-  filter: drop-shadow(0 2px 4px black);
+.emoji-icon {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 2px;
 }
 
 .action-count {
   font-size: 0.75rem;
-  margin-top: 4px;
+  margin-top: 2px;
   font-weight: 600;
 }
 
-/* actieve states */
+/* Actieve states */
+.action-btn.liked .emoji-icon {
+  filter: drop-shadow(0 0 6px #ff3040);
+}
 .action-btn.liked {
-  fill: #ff3040;
-  color: #ff3040;
+  background: rgba(255, 48, 64, 0.2);
   border-color: #ff3040;
 }
+
+.action-btn.disliked .emoji-icon {
+  filter: drop-shadow(0 0 6px #888);
+}
 .action-btn.disliked {
-  fill: #888;
-  color: #ccc;
+  background: rgba(136, 136, 136, 0.2);
   border-color: #888;
 }
+
+.action-btn.saved .emoji-icon {
+  filter: drop-shadow(0 0 6px #ffd900);
+}
 .action-btn.saved {
-  fill: #ffd900;
-  color: #ffd900;
+  background: rgba(255, 217, 0, 0.2);
   border-color: #ffd900;
 }
 
-.dislike-btn svg {
-  transform: rotate(180deg);
+.action-btn.comment-btn.active {
+  background: rgba(0, 200, 255, 0.2);
+  border-color: #00c8ff;
+}
+.action-btn.comment-btn.active .emoji-icon {
+  filter: drop-shadow(0 0 6px #00c8ff);
 }
 
-/* SHARE MENU - popup */
+/* COMMENTS MODAL */
+.comments-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.comments-modal.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+.comments-content {
+  background: #1a1a1a;
+  width: 100%;
+  max-width: 600px;
+  height: 80vh;
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+.comments-modal.active .comments-content {
+  transform: translateY(0);
+}
+
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #333;
+}
+
+.comments-header h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-comments {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0 8px;
+  line-height: 1;
+}
+
+.comments-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+  flex-shrink: 0;
+}
+
+.comment-body {
+  flex: 1;
+}
+
+.comment-author {
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-time {
+  font-size: 0.75rem;
+  color: #999;
+  font-weight: normal;
+}
+
+.comment-text {
+  color: #eee;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.comment-likes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.comments-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #333;
+}
+
+.close-comments-btn {
+  width: 100%;
+  padding: 14px;
+  background: #333;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.close-comments-btn:hover {
+  background: #444;
+}
+
+/* SHARE MENU */
 .share-menu {
   position: fixed;
   top: 0;
@@ -228,6 +391,9 @@ video, img {
   font-size: 1.2rem;
   margin-bottom: 20px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .share-options {
@@ -255,24 +421,25 @@ video, img {
 }
 
 .share-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #2a2a2a;
-  color: white;
+}
+
+.emoji-large {
+  font-size: 36px;
 }
 
 .whatsapp-icon {
   background: #25D366;
-  color: white;
 }
 
 .copy-icon {
   background: #4a4a4a;
-  color: white;
 }
 
 .share-close {
@@ -292,7 +459,7 @@ video, img {
   background: #444;
 }
 
-/* toast melding */
+/* TOAST */
 .toast {
   position: fixed;
   bottom: 30px;
@@ -310,30 +477,46 @@ video, img {
   pointer-events: none;
   white-space: nowrap;
   box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  font-size: 1rem;
 }
 
 .toast.show {
   transform: translateX(-50%) translateY(0);
 }
 
-/* responsive */
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
 @media (max-width: 600px) {
   .action-buttons {
-    bottom: 100px;
+    bottom: 80px;
     right: 8px;
-    gap: 12px;
+    gap: 10px;
   }
   .action-btn {
     padding: 8px 6px;
     min-width: 56px;
   }
+  .emoji-icon {
+    font-size: 24px;
+  }
   .item-info {
-    bottom: 100px;
+    bottom: 80px;
     left: 12px;
     right: 70px;
   }
-  .share-menu-content {
-    padding: 20px;
+  .comments-content {
+    height: 85vh;
   }
 }
 
