@@ -3,15 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tiktok 2.0</title>
+    <title>Bobtop - Video Feed</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         <header class="main-header">
-            <h1>AI Media</h1>
-            <button class="saved-btn" id="savedBtn">Opgeslagen</button>
+            <div class="header-left">
+                <h1>bobtop</h1>
+            </div>
+            <div class="header-right">
+                <button class="search-btn" id="searchBtn">🔍</button>
+                <button class="saved-btn" id="savedBtn">Opgeslagen</button>
+            </div>
         </header>
+
+        <!-- Search bar (hidden by default) -->
+        <div id="searchBar" class="search-bar hidden">
+            <input type="text" id="searchInput" placeholder="Zoeken naar videos, kanalen..." autocomplete="off">
+            <button id="searchCloseBtn">✕</button>
+        </div>
 
         <div id="feed" class="feed">
             <!-- Media items worden hier ingeladen via JavaScript -->
@@ -21,7 +32,7 @@
         <div id="savedPopup" class="popup">
             <div class="popup-content">
                 <div class="popup-header">
-                    <h2>Opgeslagen media</h2>
+                    <h2>Opgeslagen</h2>
                     <button class="close-btn" id="closePopup">&times;</button>
                 </div>
                 <div id="savedItemsList" class="saved-items-list">
@@ -34,7 +45,7 @@
         <div id="sharePopup" class="popup">
             <div class="popup-content">
                 <div class="popup-header">
-                    <h2>Deel deze video</h2>
+                    <h2>Deel</h2>
                     <button class="close-btn" id="closeSharePopup">&times;</button>
                 </div>
                 <div class="share-content">
