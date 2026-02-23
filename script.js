@@ -94,7 +94,7 @@ const videoDatabase = [
 ];
 
 // Fallback video voor als bestanden niet gevonden worden
-const FALLBACK_VIDEO_URL = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+const FALLBACK_VIDEO_URL = 'https://jimisdebest.github.io/musical/HetBloemenlandDansvideo.mp4';
 
 // ---------- REACTIES UIT REACTIES.TXT ----------
 let commentsDatabase = [];
