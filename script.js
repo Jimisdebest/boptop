@@ -22,12 +22,25 @@ const videoDatabase = [
         title: 'HEMA Regenboogrookworst',
         description: 'Koop nu HEMA regenboogrookworst!',
         contentType: 'Real',
-        weight: 1,
+        weight: 0.5,
         baseLikes: 8900,
         baseDislikes: 450
     },
     {
         id: 3,
+        type: 'video',
+        url: 'HEMA-koop-deze-mevrouw-bij-ons.mp4',
+        channel: 'HEMA',
+        channelId: 'hema',
+        title: 'Koop deze mevrouw bij ons!',
+        description: 'Ze ligt nu in de winkel: henatje.',
+        contentType: 'Real',
+        weight: 0.5,
+        baseLikes: 8900,
+        baseDislikes: 450
+    },
+    {
+        id: 4,
         type: 'video',
         url: 'MINECRAFTMODS-hoe-je-een-mod-installeerd.mp4',
         channel: 'MINECRAFTMODS',
@@ -40,7 +53,7 @@ const videoDatabase = [
         baseDislikes: 210
     },
     {
-        id: 4,
+        id: 5,
         type: 'video',
         url: 'FUNNYAI-ik-ga-je-pakken.mp4',
         channel: 'FunnyAI',
@@ -53,7 +66,7 @@ const videoDatabase = [
         baseDislikes: 89
     },
     {
-        id: 4,
+        id: 6,
         type: 'video',
         url: 'NATUREVIDEOS-see-the-see.mp4',
         channel: 'Naturevideo´s',
@@ -66,7 +79,7 @@ const videoDatabase = [
         baseDislikes: 5
     },
     {
-        id: 5,
+        id: 7,
         type: 'video',
         url: 'NATUREVIDEOS-see-the-strand.mp4',
         channel: 'Naturevideo´s',
