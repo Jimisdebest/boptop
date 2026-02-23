@@ -64,6 +64,19 @@ const videoDatabase = [
         weight: 1.0,
         baseLikes: 300,
         baseDislikes: 5
+    },
+    {
+        id: 5,
+        type: 'video',
+        url: 'NATUREVIDEOS-see-the-strand.mp4',
+        channel: 'Naturevideo´s',
+        channelId: 'naturevideos',
+        title: 'See the strand',
+        description: 'Het strand in afrika, het was er koud!',
+        contentType: 'AI',
+        weight: 1.0,
+        baseLikes: 300,
+        baseDislikes: 5
     }
 ];
 
