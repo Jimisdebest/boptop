@@ -51,6 +51,19 @@ const videoDatabase = [
         weight: 1.8,
         baseLikes: 34200,
         baseDislikes: 89
+    },
+    {
+        id: 4,
+        type: 'video',
+        url: 'NATUREVIDEOS-see-the-see.mp4',
+        channel: 'Naturevideo´s',
+        channelId: 'naturevideos',
+        title: 'See the see',
+        description: 'De zee in india, zo prachtig!',
+        contentType: 'AI',
+        weight: 1.0,
+        baseLikes: 300,
+        baseDislikes: 5
     }
 ];
 
