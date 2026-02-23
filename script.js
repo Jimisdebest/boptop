@@ -291,36 +291,46 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2300);
 }
 
-// ---------- SCROLL SNAP ----------
+// ---------- SOEPELE SCROLL SNAP ----------
 function setupScrollSnap() {
-    let isSnapping = false;
+    let isScrolling = false;
+    let scrollTimeout;
     let lastScrollY = window.scrollY;
-    let scrollDirection = 0;
+    let snapPending = false;
     
-    function checkAndSnap() {
-        if (isSnapping) {
-            requestAnimationFrame(checkAndSnap);
-            return;
-        }
+    // Gebruik passive: true voor betere performance
+    window.addEventListener('scroll', () => {
+        lastScrollY = window.scrollY;
         
+        // Clear vorige timeout
+        clearTimeout(scrollTimeout);
+        
+        // Toon dat we aan het scrollen zijn
+        isScrolling = true;
+        
+        // Na 150ms stoppen met scrollen -> snap naar dichtsbijzijnde video
+        scrollTimeout = setTimeout(() => {
+            isScrolling = false;
+            if (!snapPending) {
+                snapPending = true;
+                requestAnimationFrame(() => {
+                    snapToClosestVideo();
+                    snapPending = false;
+                });
+            }
+        }, 150);
+    }, { passive: true });
+    
+    function snapToClosestVideo() {
         const feedItems = document.querySelectorAll('.feed-item');
-        if (feedItems.length === 0) {
-            requestAnimationFrame(checkAndSnap);
-            return;
-        }
+        if (feedItems.length === 0) return;
         
         const viewportHeight = window.innerHeight;
-        const currentScrollY = window.scrollY;
-        const scrollDelta = currentScrollY - lastScrollY;
+        const scrollY = window.scrollY;
         
-        if (scrollDelta > 5) scrollDirection = 1;
-        else if (scrollDelta < -5) scrollDirection = -1;
-        else scrollDirection = 0;
-        
-        lastScrollY = currentScrollY;
-        
-        let targetItem = null;
-        let bestMatch = 0;
+        // Zoek de video die het meest in beeld is
+        let bestItem = null;
+        let bestVisibility = 0;
         
         feedItems.forEach(item => {
             const rect = item.getBoundingClientRect();
@@ -328,52 +338,34 @@ function setupScrollSnap() {
             const itemBottom = rect.bottom;
             const itemHeight = rect.height;
             
+            // Bereken hoeveel % van de video zichtbaar is
             const visibleTop = Math.max(0, itemTop);
             const visibleBottom = Math.min(viewportHeight, itemBottom);
             const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-            const visibleRatio = visibleHeight / itemHeight;
+            const visibility = visibleHeight / itemHeight;
             
-            if (scrollDirection === 1) {
-                if (itemTop < viewportHeight * 0.3 && itemBottom > viewportHeight * 0.3) {
-                    const score = (viewportHeight - itemTop) / viewportHeight;
-                    if (score > bestMatch) {
-                        bestMatch = score;
-                        targetItem = item;
-                    }
-                }
-            } else if (scrollDirection === -1) {
-                if (itemBottom > 0 && itemTop < viewportHeight * 0.7) {
-                    const score = itemBottom / viewportHeight;
-                    if (score > bestMatch) {
-                        bestMatch = score;
-                        targetItem = item;
-                    }
-                }
-            } else {
-                if (visibleRatio > bestMatch) {
-                    bestMatch = visibleRatio;
-                    targetItem = item;
-                }
+            if (visibility > bestVisibility) {
+                bestVisibility = visibility;
+                bestItem = item;
             }
         });
         
-        if (targetItem && bestMatch > 0.3) {
-            isSnapping = true;
-            
-            targetItem.scrollIntoView({
+        // Als een video meer dan 30% zichtbaar is, snap er naartoe
+        if (bestItem && bestVisibility > 0.3) {
+            bestItem.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
-            
-            setTimeout(() => {
-                isSnapping = false;
-            }, 200);
         }
-        
-        requestAnimationFrame(checkAndSnap);
     }
     
-    requestAnimationFrame(checkAndSnap);
+    // Ook snappen bij resize van het scherm
+    window.addEventListener('resize', () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            snapToClosestVideo();
+        }, 150);
+    }, { passive: true });
 }
 
 // ---------- VIDEO SETUP MET FALLBACK ----------
