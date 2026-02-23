@@ -1,9 +1,9 @@
-// ---------- BOBTOP 5.0 - MET FUNNYAI-IK-GA-JE-PAKKEN.mp4 ----------
+// ---------- BOBTOP 5.0 - MET JUISTE VIDEO BESTANDEN ----------
 const videoDatabase = [
     {
         id: 1,
         type: 'video',
-        url: 'video.mp4',
+        url: 'video.mp4', // Controleer of dit bestand bestaat
         channel: 'CleanGirlOfficial',
         channelId: 'cleangirl',
         title: 'Cleaning MacDonalds bathroom for free!?',
@@ -16,10 +16,10 @@ const videoDatabase = [
     {
         id: 2,
         type: 'video',
-        url: 'HEMAregenboogrookworst.mp4',
+        url: 'HEMAregenboogrookworst.mp4', // Controleer of dit bestaat
         channel: 'HEMA',
         channelId: 'hema',
-        title: 'HEMA',
+        title: 'HEMA Regenboogrookworst',
         description: 'Koop nu HEMA regenboogrookworst!',
         contentType: 'Real',
         weight: 1,
@@ -29,7 +29,7 @@ const videoDatabase = [
     {
         id: 3,
         type: 'video',
-        url: 'MINECRAFTMODS-hoe-je-een-mod-installeerd.mp4',
+        url: 'MINECRAFTMODS-hoe-je-een-mod-installeerd.mp4', // Controleer dit
         channel: 'MINECRAFTMODS',
         channelId: 'minecraftmods',
         title: 'Hoe je een mod installeert',
@@ -39,21 +39,23 @@ const videoDatabase = [
         baseLikes: 15600,
         baseDislikes: 210
     },
-    // 🔥 NIEUW FUNNYAI FILMPJE - IK GA JE PAKKEN! 🔥
     {
         id: 4,
         type: 'video',
-        url: 'FUNNYAI-ik-ga-je-pakken.mp4',
+        url: 'FUNNYAI-ik-ga-je-pakken.mp4', // Controleer of dit bestaat
         channel: 'FunnyAI',
         channelId: 'funnyai',
         title: 'IK GA JE PAKKEN! 👻',
         description: 'Hilarische AI video - niet alleen kijken voor het slapen gaan',
         contentType: 'AI',
-        weight: 1.8, // Vaker tonen want grappig!
+        weight: 1.8,
         baseLikes: 34200,
         baseDislikes: 89
     }
 ];
+
+// Fallback video voor als bestanden niet gevonden worden
+const FALLBACK_VIDEO_URL = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
 // ---------- REACTIES UIT REACTIES.TXT ----------
 let commentsDatabase = [];
@@ -62,6 +64,7 @@ let commentsDatabase = [];
 async function loadComments() {
     try {
         const response = await fetch('reacties.txt');
+        if (!response.ok) throw new Error('Bestand niet gevonden');
         const text = await response.text();
         commentsDatabase = text.split('\n')
             .map(line => line.trim())
@@ -137,8 +140,8 @@ function getRandomTime() {
 const STORAGE_KEY = 'bobtop_saved_items';
 const LIKE_DISLIKE_KEY = 'bobtop_preferences';
 let currentFilterChannel = null;
-let lastPlayedVideoId = null; // Voorkomt directe repeats
-let videoPlayCount = new Map(); // Houdt bij hoe vaak video is getoond voor variatie
+let lastPlayedVideoId = null;
+let videoPlayCount = new Map();
 
 // Comment state per video
 const videoCommentsCache = new Map();
@@ -182,7 +185,7 @@ function getPreference(itemId) {
     return getPreferences()[itemId] || null;
 }
 
-// Genereer random likes (tussen 5k en 25k + eigen like)
+// Genereer random likes
 function getRandomLikeCount(item, userLiked) {
     const base = item.baseLikes || 10000;
     const variation = Math.floor(Math.random() * 5000) - 2500;
@@ -225,7 +228,6 @@ function getWeightedRandomItem() {
         available = [...videoDatabase];
     }
     
-    // Als er maar 1 video is, toon die gewoon
     if (available.length === 1) {
         return available[0];
     }
@@ -236,17 +238,14 @@ function getWeightedRandomItem() {
     let candidates = available.map(item => {
         let baseWeight = item.weight || 1;
         
-        // Dislike = bijna nooit tonen
         const pref = prefs[item.id];
         if (pref === 'dislike') baseWeight = 0.02;
         else if (pref === 'like') baseWeight *= 2.2;
         
-        // Minder kans als net gespeeld
         if (item.id === lastPlayedVideoId) {
-            baseWeight *= 0.1; // 90% minder kans direct erna
+            baseWeight *= 0.1;
         }
         
-        // Minder kans als al vaak gespeeld
         const playCount = playCounts.get(item.id) || 0;
         if (playCount > 2) {
             baseWeight *= 0.7;
@@ -260,7 +259,6 @@ function getWeightedRandomItem() {
     
     for (let c of candidates) {
         if (rand < c.weight) {
-            // Update play count
             const currentCount = videoPlayCount.get(c.item.id) || 0;
             videoPlayCount.set(c.item.id, currentCount + 1);
             lastPlayedVideoId = c.item.id;
@@ -269,7 +267,6 @@ function getWeightedRandomItem() {
         rand -= c.weight;
     }
     
-    // Fallback
     const fallback = available[0];
     videoPlayCount.set(fallback.id, (videoPlayCount.get(fallback.id) || 0) + 1);
     lastPlayedVideoId = fallback.id;
@@ -294,7 +291,7 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2300);
 }
 
-// ---------- PERFECTE DIRECTE SCROLL SNAP - GEEN VERTRAGING! ----------
+// ---------- SCROLL SNAP ----------
 function setupScrollSnap() {
     let isSnapping = false;
     let lastScrollY = window.scrollY;
@@ -379,7 +376,7 @@ function setupScrollSnap() {
     requestAnimationFrame(checkAndSnap);
 }
 
-// ---------- VIDEO SETUP - NOG PRECIEZER ----------
+// ---------- VIDEO SETUP MET FALLBACK ----------
 function setupVideo(video, itemDiv, mediaItem) {
     video.loop = true;
     video.muted = false;
@@ -388,6 +385,13 @@ function setupVideo(video, itemDiv, mediaItem) {
     
     let isPlaying = false;
     let playAttempted = false;
+    
+    // Error handling voor ontbrekende video's
+    video.onerror = () => {
+        console.warn(`❌ Video ${video.src} niet gevonden, gebruik fallback`);
+        video.src = FALLBACK_VIDEO_URL;
+        video.load();
+    };
     
     const videoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -400,7 +404,7 @@ function setupVideo(video, itemDiv, mediaItem) {
                     video.play()
                         .then(() => {
                             isPlaying = true;
-                            console.log(`▶️ Video ${mediaItem.id} speelt af (${Math.round(ratio*100)}% in beeld)`);
+                            console.log(`▶️ Video ${mediaItem.id} speelt af`);
                         })
                         .catch(e => {
                             console.log('🔇 Autoplay geblokkeerd, wacht op interactie');
@@ -418,7 +422,6 @@ function setupVideo(video, itemDiv, mediaItem) {
                     video.pause();
                     isPlaying = false;
                     playAttempted = false;
-                    console.log(`⏸️ Video ${mediaItem.id} gepauzeerd (${Math.round(ratio*100)}% in beeld)`);
                 }
             }
         });
@@ -429,16 +432,10 @@ function setupVideo(video, itemDiv, mediaItem) {
     
     videoObserver.observe(video);
     
-    video.onerror = () => {
-        console.warn(`❌ Video ${video.src} niet geladen - overslaan`);
-        itemDiv.remove();
-        maybeLoadMore();
-    };
-    
     itemDiv._videoObserver = videoObserver;
 }
 
-// Minimale scroll listener
+let lastScrollY = window.scrollY;
 window.addEventListener('scroll', () => {
     lastScrollY = window.scrollY;
 }, { passive: true });
@@ -806,9 +803,28 @@ function cleanupObservers() {
     });
 }
 
+// ---------- CONTROLEER OF VIDEO BESTANDEN BESTAAN ----------
+async function checkVideoFiles() {
+    for (const video of videoDatabase) {
+        try {
+            const response = await fetch(video.url, { method: 'HEAD' });
+            if (!response.ok) {
+                console.warn(`⚠️ Video bestand niet gevonden: ${video.url}`);
+                video.url = FALLBACK_VIDEO_URL; // Gebruik fallback
+            } else {
+                console.log(`✅ Video gevonden: ${video.url}`);
+            }
+        } catch (error) {
+            console.warn(`⚠️ Kan video niet controleren: ${video.url}`, error);
+            video.url = FALLBACK_VIDEO_URL;
+        }
+    }
+}
+
 // ---------- INIT ----------
 async function initFeed() {
     await loadComments();
+    await checkVideoFiles(); // Controleer of video's bestaan
     setupScrollSnap();
     
     const urlParams = new URLSearchParams(window.location.search);
