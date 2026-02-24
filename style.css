@@ -7,27 +7,108 @@
 html, body {
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Voorkomt dubbele scrollbars */
+    overflow: hidden;
     background: black;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
     position: fixed;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch; /* Soepel scrollen op iOS */
-    scroll-snap-type: y mandatory; /* VERPLICHTE SNAP - dit is de sleutel! */
+    width: 100%;
+    height: 100%;
 }
 
+/* Main container voor swipe */
+.app-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Kanaal zijbalk rechts */
+.channel-sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 80px;
+    background: linear-gradient(to left, rgba(0,0,0,0.8), transparent);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 20px;
+    pointer-events: none;
+}
+
+.channel-sidebar * {
+    pointer-events: auto;
+}
+
+.channel-profile {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid white;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    background: #333;
+}
+
+.channel-profile.active {
+    border-color: #ff3b5c;
+    transform: scale(1.1);
+}
+
+.channel-profile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.channel-profile:active {
+    transform: scale(0.95);
+}
+
+/* Swipe container */
+.swipe-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.swipe-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s ease-out;
+}
+
+.swipe-item {
+    flex: 0 0 100%;
+    height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    background: black;
+}
+
+/* Feed in swipe item */
 .feed {
     width: 100%;
+    min-height: 100%;
 }
 
 .feed-item {
     width: 100%;
-    height: 100vh; /* Volle hoogte */
-    scroll-snap-align: start; /* Snap naar begin van elk item */
-    scroll-snap-stop: always; /* Forceer stop bij elk item */
+    height: 100vh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
     position: relative;
     background: black;
     display: flex;
@@ -48,42 +129,15 @@ body {
 .media-container img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Of cover als je wilt croppen */
+    object-fit: contain;
     background: black;
-}
-/* Discord icoon */
-.discord-icon {
-    background: #5865F2; /* Officiële Discord kleur */
-}
-
-/* Pas de share-options grid aan voor 3 items */
-.share-options {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-}
-
-.share-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    padding: 15px 10px;
-    border-radius: 15px;
-    background: #333;
-    flex: 1;
-    min-width: 80px;
-    transition: background 0.2s;
 }
 
 .item-info {
     position: absolute;
     bottom: 100px;
     left: 15px;
-    right: 80px; /* Ruimte voor actieknoppen */
+    right: 80px;
     color: white;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
     z-index: 10;
@@ -120,7 +174,6 @@ body {
     opacity: 0.9;
 }
 
-/* Actieknoppen - rechts */
 .action-buttons {
     position: absolute;
     bottom: 100px;
@@ -178,14 +231,13 @@ body {
     font-weight: bold;
 }
 
-/* Bottom sentinel voor infinite scroll */
 .bottom-sentinel {
     width: 100%;
     height: 10px;
     background: transparent;
 }
 
-/* COMMENTS MODAL */
+/* Comments modal */
 .comments-modal {
     display: none;
     position: fixed;
@@ -318,7 +370,7 @@ body {
     cursor: pointer;
 }
 
-/* SHARE MENU */
+/* Share menu */
 .share-menu {
     display: none;
     position: fixed;
@@ -359,9 +411,10 @@ body {
 
 .share-options {
     display: flex;
-    gap: 20px;
+    gap: 15px;
     justify-content: center;
     margin-bottom: 25px;
+    flex-wrap: wrap;
 }
 
 .share-option {
@@ -370,10 +423,11 @@ body {
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 15px;
+    padding: 15px 10px;
     border-radius: 15px;
     background: #333;
     flex: 1;
+    min-width: 80px;
     transition: background 0.2s;
 }
 
@@ -395,6 +449,10 @@ body {
     background: #25D366;
 }
 
+.discord-icon {
+    background: #5865F2;
+}
+
 .copy-icon {
     background: #3897f0;
 }
@@ -414,7 +472,7 @@ body {
     cursor: pointer;
 }
 
-/* TOAST */
+/* Toast */
 .toast {
     position: fixed;
     bottom: 30px;
@@ -436,7 +494,6 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
-/* Fix voor iOS */
 @supports (-webkit-touch-callout: none) {
     .feed-item {
         height: -webkit-fill-available;
