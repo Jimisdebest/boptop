@@ -80,7 +80,7 @@ const videoDatabase = [
      {
         id: 7,
         type: 'video',
-        url: 'DRIPSKIPPERinvullen',
+        url: 'DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4',
         channel: 'DripSkipper',
         channelId: 'dripskipper',
         title: 'Zie mijn nieuwe drippak.',
