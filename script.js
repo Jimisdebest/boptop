@@ -1,4 +1,4 @@
-// ---------- BOBTOP 7.0 - RANDOM FEED + KANAAL WEERGAVE ----------
+// ---------- BOBTOP 8.0 - MET AUTOPLAY EN ZOEKSUGGESTIES ----------
 const videoDatabase = [
     {
         id: 1,
@@ -123,8 +123,8 @@ const videoDatabase = [
         url: 'FUNNYAI-ik-ben-een-paard-en-ik-ga-pindakaaskoekjes-eten.mp4',
         channel: 'FunnyAI',
         channelId: 'funnyai',
-        title: 'Ik ben een paard en ik ga pindakaaskoekjes eten.',
-        description: 'Ik hou van pindakaaskoekjes dus ik ben een paard.',
+        title: 'Ik ben een paard en ik ga pindakaas',
+        description: 'Hilarische AI video - niet alleen kijken voor het slapen gaan',
         contentType: 'AI',
         weight: 1.0,
         baseLikes: 34200,
@@ -202,6 +202,7 @@ const videoCommentsCache = new Map();
 let currentChannelVideos = [];
 let isChannelView = false;
 let searchTimeout = null;
+let currentlyPlayingVideo = null;
 
 function getPreferences() {
     try { return JSON.parse(localStorage.getItem(LIKE_DISLIKE_KEY)) || {}; } catch { return {}; }
@@ -275,7 +276,7 @@ function getWeightedRandomItem() {
     return available[0];
 }
 
-// ---------- VIDEO SETUP ----------
+// ---------- VIDEO SETUP - VERBETERD AUTOPLAY ----------
 function setupVideo(video, itemDiv, mediaItem) {
     video.loop = true;
     video.muted = false;
@@ -287,11 +288,24 @@ function setupVideo(video, itemDiv, mediaItem) {
         video.src = FALLBACK_VIDEO_URL;
     };
     
+    // Forceer autoplay door eerst te proberen met muted
+    const playVideo = () => {
+        video.muted = false;
+        video.play().catch(e => {
+            console.log('Autoplay geblokkeerd, probeer met mute');
+            video.muted = true;
+            video.play().catch(err => {
+                console.log('Video kan niet afspelen:', err);
+            });
+        });
+    };
+    
     const videoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.7;
+            const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.5;
             
             if (isVisible) {
+                // Pauzeer alle andere videos
                 document.querySelectorAll('.feed-item video').forEach(otherVideo => {
                     if (otherVideo !== video) {
                         otherVideo.pause();
@@ -299,23 +313,37 @@ function setupVideo(video, itemDiv, mediaItem) {
                     }
                 });
                 
-                video.muted = false;
-                video.play().catch(() => {
-                    video.muted = false;
-                    video.play().catch(e => console.log('Kan niet afspelen zonder interactie'));
-                });
-                
+                // Speel deze video af
+                currentlyPlayingVideo = video;
+                playVideo();
                 updateProfilePicture(mediaItem.channelId);
+                
+                console.log(`▶️ Video ${mediaItem.id} speelt af`);
             } else {
                 video.pause();
                 video.muted = true;
+                if (currentlyPlayingVideo === video) {
+                    currentlyPlayingVideo = null;
+                }
             }
         });
-    }, { threshold: 0.7 });
+    }, { threshold: 0.5 });
     
     videoObserver.observe(video);
     itemDiv._videoObserver = videoObserver;
+    
+    // Start met mute aan voor autoplay
     video.muted = true;
+    
+    // Probeer direct te spelen als het eerste item
+    setTimeout(() => {
+        if (itemDiv === document.querySelector('.feed-item:first-child')) {
+            const rect = itemDiv.getBoundingClientRect();
+            if (rect.top >= 0 && rect.top < window.innerHeight) {
+                playVideo();
+            }
+        }
+    }, 100);
 }
 
 // ---------- PROFIELFOTO ----------
@@ -332,9 +360,89 @@ function updateProfilePicture(channelId) {
     profileDiv.dataset.channelId = channelId;
 }
 
+// ---------- ZOEKSUGGESTIES ----------
+function createSuggestionsContainer() {
+    const container = document.createElement('div');
+    container.id = 'searchSuggestions';
+    container.className = 'search-suggestions';
+    document.querySelector('.app-container').appendChild(container);
+    return container;
+}
+
+function updateSuggestions(query) {
+    const suggestionsContainer = document.getElementById('searchSuggestions') || createSuggestionsContainer();
+    
+    if (!query || query.length < 2) {
+        suggestionsContainer.classList.remove('active');
+        return;
+    }
+    
+    const queryLower = query.toLowerCase();
+    
+    // Zoek naar matches
+    const matches = videoDatabase.filter(video => 
+        video.title.toLowerCase().includes(queryLower) ||
+        video.description.toLowerCase().includes(queryLower) ||
+        video.channelId.toLowerCase().includes(queryLower) ||
+        video.channel.toLowerCase().includes(queryLower)
+    ).slice(0, 8); // Max 8 suggesties
+    
+    if (matches.length === 0) {
+        suggestionsContainer.innerHTML = '<div class="no-suggestions">Geen resultaten gevonden</div>';
+        suggestionsContainer.classList.add('active');
+        return;
+    }
+    
+    suggestionsContainer.innerHTML = matches.map(video => `
+        <div class="suggestion-item" data-video-id="${video.id}">
+            <div class="suggestion-emoji">${video.type === 'video' ? '🎬' : '📷'}</div>
+            <div class="suggestion-info">
+                <div class="suggestion-title">${video.title}</div>
+                <div class="suggestion-channel">
+                    <span>@${video.channelId}</span>
+                    <span class="suggestion-badge">${video.contentType}</span>
+                    <span class="suggestion-type">${video.type.toUpperCase()}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    // Voeg click handlers toe
+    suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const videoId = parseInt(item.dataset.videoId);
+            const video = videoDatabase.find(v => v.id === videoId);
+            if (video) {
+                // Scroll naar deze video
+                const existingItem = document.querySelector(`.feed-item[data-item-id="${videoId}"]`);
+                if (existingItem) {
+                    existingItem.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    // Voeg video toe aan feed
+                    isChannelView = true;
+                    currentChannelVideos = [video];
+                    const feed = document.getElementById('feed');
+                    feed.innerHTML = '';
+                    currentRenderedIds.clear();
+                    feed.appendChild(createFeedItem(video));
+                    currentRenderedIds.add(video.id);
+                }
+                
+                // Update profielfoto
+                updateProfilePicture(video.channelId);
+                
+                // Verberg suggesties
+                suggestionsContainer.classList.remove('active');
+                document.getElementById('searchInput').value = video.title;
+            }
+        });
+    });
+    
+    suggestionsContainer.classList.add('active');
+}
+
 // ---------- KANAAL WEERGAVE ----------
 function showChannelVideos(channelId) {
-    // Haal alle videos van dit kanaal op
     const channelVideos = videoDatabase.filter(v => v.channelId === channelId);
     
     if (channelVideos.length === 0) return;
@@ -342,12 +450,10 @@ function showChannelVideos(channelId) {
     isChannelView = true;
     currentChannelVideos = channelVideos;
     
-    // Leeg de feed
     const feed = document.getElementById('feed');
     feed.innerHTML = '';
     currentRenderedIds.clear();
     
-    // Voeg alle videos van dit kanaal toe
     channelVideos.forEach(video => {
         const feedItem = createFeedItem(video);
         feed.appendChild(feedItem);
@@ -355,6 +461,11 @@ function showChannelVideos(channelId) {
     });
     
     showToast(`📺 Alle videos van @${channelId}`);
+    
+    // Scroll naar eerste video
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
 }
 
 // ---------- TERUG NAAR RANDOM FEED ----------
@@ -364,12 +475,10 @@ function showRandomFeed() {
     isChannelView = false;
     currentChannelVideos = [];
     
-    // Leeg de feed
     const feed = document.getElementById('feed');
     feed.innerHTML = '';
     currentRenderedIds.clear();
     
-    // Voeg 3 random videos toe
     for (let i = 0; i < 3; i++) {
         addItemToFeed();
     }
@@ -380,43 +489,71 @@ function showRandomFeed() {
 // ---------- ZOEKFUNCTIE ----------
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
+    const suggestionsContainer = createSuggestionsContainer();
     
     searchInput.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        const query = e.target.value.toLowerCase().trim();
+        const query = e.target.value.trim();
         
+        clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            if (query.length === 0) {
-                showRandomFeed();
-                return;
-            }
-            
-            // Zoek in videos
-            const results = videoDatabase.filter(video => 
-                video.title.toLowerCase().includes(query) ||
-                video.description.toLowerCase().includes(query) ||
-                video.channelId.toLowerCase().includes(query) ||
-                video.channel.toLowerCase().includes(query)
-            );
-            
-            if (results.length > 0) {
-                isChannelView = true;
-                currentChannelVideos = results;
-                
-                const feed = document.getElementById('feed');
-                feed.innerHTML = '';
-                currentRenderedIds.clear();
-                
-                results.forEach(video => {
-                    const feedItem = createFeedItem(video);
-                    feed.appendChild(feedItem);
-                    currentRenderedIds.add(video.id);
-                });
-                
-                showToast(`🔍 ${results.length} resultaten`);
-            }
-        }, 300);
+            updateSuggestions(query);
+        }, 200);
     });
+    
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            suggestionsContainer.classList.remove('active');
+            searchInput.blur();
+        } else if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query.length > 0) {
+                suggestionsContainer.classList.remove('active');
+                performSearch(query);
+            }
+        }
+    });
+    
+    // Klik buiten sluit suggesties
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.classList.remove('active');
+        }
+    });
+}
+
+function performSearch(query) {
+    const queryLower = query.toLowerCase();
+    
+    const results = videoDatabase.filter(video => 
+        video.title.toLowerCase().includes(queryLower) ||
+        video.description.toLowerCase().includes(queryLower) ||
+        video.channelId.toLowerCase().includes(queryLower) ||
+        video.channel.toLowerCase().includes(queryLower)
+    );
+    
+    if (results.length > 0) {
+        isChannelView = true;
+        currentChannelVideos = results;
+        
+        const feed = document.getElementById('feed');
+        feed.innerHTML = '';
+        currentRenderedIds.clear();
+        
+        results.forEach(video => {
+            const feedItem = createFeedItem(video);
+            feed.appendChild(feedItem);
+            currentRenderedIds.add(video.id);
+        });
+        
+        showToast(`🔍 ${results.length} resultaten`);
+        
+        // Scroll naar eerste resultaat
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+    } else {
+        showToast('❌ Geen resultaten gevonden');
+    }
 }
 
 // ---------- FEED ----------
@@ -737,6 +874,15 @@ async function init() {
     for (let i = 0; i < 3; i++) {
         addItemToFeed();
     }
+    
+    // Forceer eerste video afspelen
+    setTimeout(() => {
+        const firstVideo = document.querySelector('.feed-item video');
+        if (firstVideo) {
+            firstVideo.muted = false;
+            firstVideo.play().catch(e => console.log('Eerste video autoplay:', e));
+        }
+    }, 500);
 }
 
 init();
