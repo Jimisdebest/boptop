@@ -1,4 +1,4 @@
-// ---------- BOBTOP 6.0 - MET SWIPE EN KANAALPROFIELEN ----------
+// ---------- BOBTOP 7.0 - RANDOM FEED + KANAAL WEERGAVE ----------
 const videoDatabase = [
     {
         id: 1,
@@ -123,8 +123,8 @@ const videoDatabase = [
         url: 'FUNNYAI-ik-ben-een-paard-en-ik-ga-pindakaaskoekjes-eten.mp4',
         channel: 'FunnyAI',
         channelId: 'funnyai',
-        title: 'Ik ben een paard en ik ga pindakaas',
-        description: 'Hilarische AI video - niet alleen kijken voor het slapen gaan',
+        title: 'Ik ben een paard en ik ga pindakaaskoekjes eten.',
+        description: 'Ik hou van pindakaaskoekjes dus ik ben een paard.',
         contentType: 'AI',
         weight: 1.0,
         baseLikes: 34200,
@@ -132,7 +132,6 @@ const videoDatabase = [
     },
     
 ];
-
 // Fallback video
 const FALLBACK_VIDEO_URL = 'https://jimisdebest.github.io/musical/HetBloemenlandDansvideo.mp4';
 
@@ -154,7 +153,10 @@ async function loadComments() {
             "Eerste! 🙋‍♂️",
             "😂😂😂 geweldig",
             "IK GA JE PAKKEN! 👻",
-            "FunnyAI is de beste!"
+            "FunnyAI is de beste!",
+            "Echt AI? Niet te geloven",
+            "Hahaha geniaal dit",
+            "Like voor deel 2!"
         ];
     }
 }
@@ -177,8 +179,8 @@ function getRandomComments() {
 }
 
 function generateUsername() {
-    const prefixes = ['@bob', '@ai', '@user', '@fan', '@funnyai'];
-    const suffixes = ['123', 'fan', 'nl', 'xd', '👻'];
+    const prefixes = ['@bob', '@ai', '@user', '@fan', '@funnyai', '@kijker'];
+    const suffixes = ['123', 'fan', 'nl', 'xd', '👻', 'lover'];
     return prefixes[Math.floor(Math.random() * prefixes.length)] + 
            suffixes[Math.floor(Math.random() * suffixes.length)] + 
            Math.floor(Math.random() * 100);
@@ -192,27 +194,14 @@ function getRandomTime() {
     return `${days} dagen geleden`;
 }
 
-// ---------- STORAGE & STATE ----------
+// ---------- STORAGE ----------
 const LIKE_DISLIKE_KEY = 'bobtop_preferences';
-let currentChannelFilter = null;
 let lastPlayedVideoId = null;
 let videoPlayCount = new Map();
 const videoCommentsCache = new Map();
-let currentSwipeIndex = 0;
-let swipeStartX = 0;
-let isSwiping = false;
-
-// Groepeer videos per kanaal
-const channelVideos = {};
-videoDatabase.forEach(video => {
-    if (!channelVideos[video.channelId]) {
-        channelVideos[video.channelId] = [];
-    }
-    channelVideos[video.channelId].push(video);
-});
-
-// Lijst van kanalen in volgorde
-const channels = Object.keys(channelVideos);
+let currentChannelVideos = [];
+let isChannelView = false;
+let searchTimeout = null;
 
 function getPreferences() {
     try { return JSON.parse(localStorage.getItem(LIKE_DISLIKE_KEY)) || {}; } catch { return {}; }
@@ -252,6 +241,40 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2300);
 }
 
+// ---------- GEWOGEN RANDOM ----------
+function getWeightedRandomItem() {
+    let available = [...videoDatabase];
+    
+    if (available.length === 1) return available[0];
+    
+    const prefs = getPreferences();
+    let candidates = available.map(item => {
+        let weight = item.weight || 1;
+        const pref = prefs[item.id];
+        if (pref === 'dislike') weight = 0.02;
+        else if (pref === 'like') weight *= 2.2;
+        if (item.id === lastPlayedVideoId) weight *= 0.3;
+        
+        const playCount = videoPlayCount.get(item.id) || 0;
+        if (playCount > 3) weight *= 0.7;
+        
+        return { item, weight: Math.max(0.01, weight) };
+    });
+    
+    const total = candidates.reduce((sum, c) => sum + c.weight, 0);
+    let rand = Math.random() * total;
+    
+    for (let c of candidates) {
+        if (rand < c.weight) {
+            videoPlayCount.set(c.item.id, (videoPlayCount.get(c.item.id) || 0) + 1);
+            lastPlayedVideoId = c.item.id;
+            return c.item;
+        }
+        rand -= c.weight;
+    }
+    return available[0];
+}
+
 // ---------- VIDEO SETUP ----------
 function setupVideo(video, itemDiv, mediaItem) {
     video.loop = true;
@@ -269,7 +292,7 @@ function setupVideo(video, itemDiv, mediaItem) {
             const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.7;
             
             if (isVisible) {
-                document.querySelectorAll(`.swipe-item[data-channel="${currentChannelFilter || 'all'}"] video`).forEach(otherVideo => {
+                document.querySelectorAll('.feed-item video').forEach(otherVideo => {
                     if (otherVideo !== video) {
                         otherVideo.pause();
                         otherVideo.muted = true;
@@ -281,6 +304,8 @@ function setupVideo(video, itemDiv, mediaItem) {
                     video.muted = false;
                     video.play().catch(e => console.log('Kan niet afspelen zonder interactie'));
                 });
+                
+                updateProfilePicture(mediaItem.channelId);
             } else {
                 video.pause();
                 video.muted = true;
@@ -293,11 +318,123 @@ function setupVideo(video, itemDiv, mediaItem) {
     video.muted = true;
 }
 
+// ---------- PROFIELFOTO ----------
+function updateProfilePicture(channelId) {
+    const profileDiv = document.getElementById('currentChannelProfile');
+    const profileImg = document.getElementById('profileImage');
+    
+    profileImg.src = `${channelId.toUpperCase()}.png`;
+    profileImg.onerror = () => {
+        profileImg.src = 'https://via.placeholder.com/60/333/fff?text=' + channelId[0].toUpperCase();
+    };
+    
+    profileDiv.style.display = 'block';
+    profileDiv.dataset.channelId = channelId;
+}
+
+// ---------- KANAAL WEERGAVE ----------
+function showChannelVideos(channelId) {
+    // Haal alle videos van dit kanaal op
+    const channelVideos = videoDatabase.filter(v => v.channelId === channelId);
+    
+    if (channelVideos.length === 0) return;
+    
+    isChannelView = true;
+    currentChannelVideos = channelVideos;
+    
+    // Leeg de feed
+    const feed = document.getElementById('feed');
+    feed.innerHTML = '';
+    currentRenderedIds.clear();
+    
+    // Voeg alle videos van dit kanaal toe
+    channelVideos.forEach(video => {
+        const feedItem = createFeedItem(video);
+        feed.appendChild(feedItem);
+        currentRenderedIds.add(video.id);
+    });
+    
+    showToast(`📺 Alle videos van @${channelId}`);
+}
+
+// ---------- TERUG NAAR RANDOM FEED ----------
+function showRandomFeed() {
+    if (!isChannelView) return;
+    
+    isChannelView = false;
+    currentChannelVideos = [];
+    
+    // Leeg de feed
+    const feed = document.getElementById('feed');
+    feed.innerHTML = '';
+    currentRenderedIds.clear();
+    
+    // Voeg 3 random videos toe
+    for (let i = 0; i < 3; i++) {
+        addItemToFeed();
+    }
+    
+    showToast('🎲 Willekeurige videos');
+}
+
+// ---------- ZOEKFUNCTIE ----------
+function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.toLowerCase().trim();
+        
+        searchTimeout = setTimeout(() => {
+            if (query.length === 0) {
+                showRandomFeed();
+                return;
+            }
+            
+            // Zoek in videos
+            const results = videoDatabase.filter(video => 
+                video.title.toLowerCase().includes(query) ||
+                video.description.toLowerCase().includes(query) ||
+                video.channelId.toLowerCase().includes(query) ||
+                video.channel.toLowerCase().includes(query)
+            );
+            
+            if (results.length > 0) {
+                isChannelView = true;
+                currentChannelVideos = results;
+                
+                const feed = document.getElementById('feed');
+                feed.innerHTML = '';
+                currentRenderedIds.clear();
+                
+                results.forEach(video => {
+                    const feedItem = createFeedItem(video);
+                    feed.appendChild(feedItem);
+                    currentRenderedIds.add(video.id);
+                });
+                
+                showToast(`🔍 ${results.length} resultaten`);
+            }
+        }, 300);
+    });
+}
+
+// ---------- FEED ----------
+let loadedItemCount = 0;
+let currentRenderedIds = new Set();
+const feedEl = document.getElementById('feed');
+const sentinel = document.getElementById('sentinel');
+const actionPanelTemplate = document.getElementById('action-panel-template').innerHTML;
+const shareMenu = document.getElementById('share-menu');
+const commentsModal = document.getElementById('comments-modal');
+let currentShareItemId = null;
+
 // ---------- FEED ITEM CREATIE ----------
 function createFeedItem(mediaItem) {
     const itemDiv = document.createElement('div');
     itemDiv.className = 'feed-item';
     itemDiv.dataset.itemId = mediaItem.id;
+    itemDiv.dataset.channelId = mediaItem.channelId;
 
     const mediaContainer = document.createElement('div');
     mediaContainer.className = 'media-container';
@@ -334,11 +471,11 @@ function createFeedItem(mediaItem) {
 
     infoDiv.querySelector('.channel-link').addEventListener('click', (e) => {
         e.preventDefault();
-        filterToChannel(mediaItem.channelId);
+        showChannelVideos(mediaItem.channelId);
     });
 
     const actionsDiv = document.createElement('div');
-    actionsDiv.innerHTML = document.getElementById('action-panel-template').innerHTML;
+    actionsDiv.innerHTML = actionPanelTemplate;
     const actionButtons = actionsDiv.firstElementChild.cloneNode(true);
     
     const likeBtn = actionButtons.querySelector('.like-btn');
@@ -411,7 +548,7 @@ function createFeedItem(mediaItem) {
 
     saveBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        showToast('💾 Opgeslagen! (Lijsten komen later)');
+        showToast('💾 Opgeslagen!');
     });
 
     commentBtn.addEventListener('click', (e) => {
@@ -456,168 +593,79 @@ function openCommentsModal(mediaItem) {
         </div>
     `).join('');
     
-    document.getElementById('comments-modal').classList.add('active');
+    commentsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeCommentsModal() {
-    document.getElementById('comments-modal').classList.remove('active');
+    commentsModal.classList.remove('active');
     document.body.style.overflow = 'auto';
 }
 
 // ---------- SHARE MENU ----------
-let currentShareItemId = null;
-
 function openShareMenu(mediaItem) {
-    const shareMenu = document.getElementById('share-menu');
     shareMenu.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeShareMenu() {
-    document.getElementById('share-menu').classList.remove('active');
+    shareMenu.classList.remove('active');
     document.body.style.overflow = 'auto';
 }
 
-// ---------- KANAAL FILTER FUNCTIES ----------
-function filterToChannel(channelId) {
-    const index = channels.indexOf(channelId);
-    if (index !== -1) {
-        currentSwipeIndex = index;
-        updateSwipePosition();
-        updateActiveProfile();
-        showToast(`📺 @${channelId}`);
+// ---------- PROFIEL KLIK ----------
+document.getElementById('currentChannelProfile').addEventListener('click', (e) => {
+    const channelId = e.currentTarget.dataset.channelId;
+    if (channelId) {
+        showChannelVideos(channelId);
     }
-}
+});
 
-function updateActiveProfile() {
-    document.querySelectorAll('.channel-profile').forEach(profile => {
-        const channelId = profile.dataset.channelId;
-        if (channelId === channels[currentSwipeIndex]) {
-            profile.classList.add('active');
-        } else {
-            profile.classList.remove('active');
-        }
-    });
-}
+// ---------- INFINITE SCROLL ----------
+let isLoading = false;
+let pendingLoad = false;
 
-// ---------- SWIPE FUNCTIES ----------
-function initSwipe() {
-    const container = document.querySelector('.swipe-container');
-    const wrapper = document.querySelector('.swipe-wrapper');
+function addItemToFeed() {
+    if (isLoading || isChannelView) return;
+    isLoading = true;
     
-    // Maak swipe items voor elk kanaal
-    channels.forEach(channelId => {
-        const swipeItem = document.createElement('div');
-        swipeItem.className = 'swipe-item';
-        swipeItem.dataset.channel = channelId;
-        
-        const feed = document.createElement('div');
-        feed.className = 'feed';
-        
-        // Voeg alle videos van dit kanaal toe
-        channelVideos[channelId].forEach(video => {
-            feed.appendChild(createFeedItem(video));
-        });
-        
-        swipeItem.appendChild(feed);
-        wrapper.appendChild(swipeItem);
-    });
+    const item = getWeightedRandomItem();
     
-    // Voeg sentinel toe aan laatste feed
-    const lastSwipeItem = wrapper.lastElementChild;
-    if (lastSwipeItem) {
-        const sentinel = document.createElement('div');
-        sentinel.className = 'bottom-sentinel';
-        sentinel.id = 'sentinel';
-        lastSwipeItem.querySelector('.feed').appendChild(sentinel);
+    const lastItem = feedEl.lastChild;
+    if (lastItem && lastItem.dataset.itemId == item.id) {
+        isLoading = false;
+        setTimeout(() => addItemToFeed(), 50);
+        return;
     }
+
+    const feedItem = createFeedItem(item);
+    feedEl.appendChild(feedItem);
+    currentRenderedIds.add(item.id);
+    loadedItemCount++;
     
-    // Swipe event listeners
-    container.addEventListener('touchstart', (e) => {
-        swipeStartX = e.touches[0].clientX;
-        isSwiping = true;
-    }, { passive: true });
-    
-    container.addEventListener('touchmove', (e) => {
-        if (!isSwiping) return;
-        
-        const currentX = e.touches[0].clientX;
-        const diff = currentX - swipeStartX;
-        const swipeWidth = window.innerWidth;
-        
-        // Alleen swipen als het geen verticale scroll is
-        if (Math.abs(diff) > 20) {
-            e.preventDefault();
-            
-            // Bereken nieuwe positie met weerstand
-            let newPosition = (currentSwipeIndex * -swipeWidth) + diff * 0.3;
-            wrapper.style.transform = `translateX(${newPosition}px)`;
-            wrapper.style.transition = 'none';
+    setTimeout(() => {
+        isLoading = false;
+        if (pendingLoad) {
+            pendingLoad = false;
+            maybeLoadMore();
         }
-    }, { passive: false });
-    
-    container.addEventListener('touchend', (e) => {
-        if (!isSwiping) return;
-        
-        const endX = e.changedTouches[0].clientX;
-        const diff = endX - swipeStartX;
-        const swipeWidth = window.innerWidth;
-        
-        wrapper.style.transition = 'transform 0.3s ease-out';
-        
-        if (Math.abs(diff) > 50) {
-            if (diff > 0 && currentSwipeIndex > 0) {
-                // Swipe naar rechts (vorig kanaal)
-                currentSwipeIndex--;
-            } else if (diff < 0 && currentSwipeIndex < channels.length - 1) {
-                // Swipe naar links (volgend kanaal)
-                currentSwipeIndex++;
-            }
-        }
-        
-        updateSwipePosition();
-        updateActiveProfile();
-        
-        isSwiping = false;
-        swipeStartX = 0;
-    }, { passive: true });
+    }, 300);
 }
 
-function updateSwipePosition() {
-    const wrapper = document.querySelector('.swipe-wrapper');
-    const swipeWidth = window.innerWidth;
-    wrapper.style.transform = `translateX(-${currentSwipeIndex * swipeWidth}px)`;
+function maybeLoadMore() {
+    if (isLoading) {
+        pendingLoad = true;
+        return;
+    }
+    addItemToFeed();
 }
 
-// ---------- KANAAL PROFIELEN ----------
-function createChannelProfiles() {
-    const sidebar = document.createElement('div');
-    sidebar.className = 'channel-sidebar';
-    
-    channels.forEach(channelId => {
-        const profile = document.createElement('div');
-        profile.className = `channel-profile ${channelId === channels[0] ? 'active' : ''}`;
-        profile.dataset.channelId = channelId;
-        
-        const img = document.createElement('img');
-        img.src = `${channelId.toUpperCase()}.png`;
-        img.alt = `@${channelId}`;
-        img.onerror = () => {
-            img.src = 'https://via.placeholder.com/60/333/fff?text=' + channelId[0].toUpperCase();
-        };
-        
-        profile.appendChild(img);
-        
-        profile.addEventListener('click', () => {
-            filterToChannel(channelId);
-        });
-        
-        sidebar.appendChild(profile);
-    });
-    
-    document.querySelector('.app-container').appendChild(sidebar);
-}
+const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !isChannelView) {
+        maybeLoadMore();
+    }
+}, { threshold: 0.1 });
+observer.observe(sentinel);
 
 // ---------- SHARE EVENT LISTENERS ----------
 document.getElementById('share-whatsapp')?.addEventListener('click', () => {
@@ -671,8 +719,8 @@ document.getElementById('share-copy')?.addEventListener('click', async () => {
 document.querySelector('.share-close')?.addEventListener('click', closeShareMenu);
 
 // Modal event listeners
-document.getElementById('comments-modal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('comments-modal')) {
+commentsModal.addEventListener('click', (e) => {
+    if (e.target === commentsModal) {
         closeCommentsModal();
     }
 });
@@ -683,31 +731,12 @@ document.querySelector('.close-comments-btn')?.addEventListener('click', closeCo
 // ---------- INIT ----------
 async function init() {
     await loadComments();
+    setupSearch();
     
-    // Maak app container
-    const appContainer = document.createElement('div');
-    appContainer.className = 'app-container';
-    document.body.appendChild(appContainer);
-    
-    // Maak swipe container
-    const swipeContainer = document.createElement('div');
-    swipeContainer.className = 'swipe-container';
-    const swipeWrapper = document.createElement('div');
-    swipeWrapper.className = 'swipe-wrapper';
-    swipeContainer.appendChild(swipeWrapper);
-    appContainer.appendChild(swipeContainer);
-    
-    // Verplaats feed naar swipe wrapper
-    const feed = document.getElementById('feed');
-    feed.remove();
-    swipeWrapper.appendChild(feed);
-    
-    // Initialiseer swipe en profielen
-    createChannelProfiles();
-    initSwipe();
-    
-    // Update active profile
-    updateActiveProfile();
+    // Start met 3 random videos
+    for (let i = 0; i < 3; i++) {
+        addItemToFeed();
+    }
 }
 
 init();
