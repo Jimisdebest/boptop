@@ -116,7 +116,21 @@ const videoDatabase = [
         weight: 1.0,
         baseLikes: 300,
         baseDislikes: 5
-    }
+    },
+    {
+        id: 5,
+        type: 'video',
+        url: 'FUNNYAI-ik-ben-een-paard-en-ik-ga-pindakaaskoekjes-eten.mp4',
+        channel: 'FunnyAI',
+        channelId: 'funnyai',
+        title: 'Ik ben een paard en ik ga pindakaas',
+        description: 'Hilarische AI video - niet alleen kijken voor het slapen gaan',
+        contentType: 'AI',
+        weight: 1.0,
+        baseLikes: 34200,
+        baseDislikes: 89
+    },
+    
 ];
 
 // Fallback video
