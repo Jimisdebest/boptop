@@ -489,3 +489,92 @@ body {
         height: -webkit-fill-available;
     }
 }
+/* Zoeksuggesties */
+.search-suggestions {
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    right: 100px;
+    background: #1a1a1a;
+    border-radius: 15px;
+    border: 1px solid #333;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+}
+
+.search-suggestions.active {
+    display: block;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #333;
+    transition: background 0.2s;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item:focus {
+    background: #333;
+}
+
+.suggestion-emoji {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    background: #252525;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.suggestion-info {
+    flex: 1;
+}
+
+.suggestion-title {
+    font-weight: bold;
+    color: white;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.suggestion-channel {
+    color: #999;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suggestion-badge {
+    background: #3897f0;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.suggestion-type {
+    color: #666;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.no-suggestions {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
