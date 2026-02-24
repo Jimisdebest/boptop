@@ -1,3 +1,4 @@
+// ---------- BOBTOP 6.0 - MET SWIPE EN KANAALPROFIELEN ----------
 const videoDatabase = [
     {
         id: 1,
@@ -77,7 +78,7 @@ const videoDatabase = [
         baseLikes: 350,
         baseDislikes: 10
     },
-     {
+    {
         id: 7,
         type: 'video',
         url: 'DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4',
@@ -91,7 +92,7 @@ const videoDatabase = [
         baseDislikes: 10
     },
     {
-        id: 6,
+        id: 8,
         type: 'video',
         url: 'NATUREVIDEOS-see-the-see.mp4',
         channel: 'Naturevideo´s',
@@ -104,7 +105,7 @@ const videoDatabase = [
         baseDislikes: 5
     },
     {
-        id: 7,
+        id: 9,
         type: 'video',
         url: 'NATUREVIDEOS-see-the-strand.mp4',
         channel: 'Naturevideo´s',
@@ -118,13 +119,12 @@ const videoDatabase = [
     }
 ];
 
-// Fallback video voor als bestanden niet gevonden worden
+// Fallback video
 const FALLBACK_VIDEO_URL = 'https://jimisdebest.github.io/musical/HetBloemenlandDansvideo.mp4';
 
-// ---------- REACTIES UIT REACTIES.TXT ----------
+// ---------- REACTIES ----------
 let commentsDatabase = [];
 
-// Laad reacties uit txt bestand
 async function loadComments() {
     try {
         const response = await fetch('reacties.txt');
@@ -135,40 +135,22 @@ async function loadComments() {
             .filter(line => line.length > 0);
         console.log(`📝 ${commentsDatabase.length} reacties geladen`);
     } catch (error) {
-        console.warn('⚠️ reacties.txt niet gevonden, gebruik standaard reacties');
         commentsDatabase = [
             "Dit is echt top gemaakt! 🔥",
             "Eerste! 🙋‍♂️",
-            "Hoe lang ben je hiermee bezig geweest?",
             "😂😂😂 geweldig",
-            "Eindelijk normaal commentaar",
-            "Like voor deel 2!",
-            "AI wordt steeds beter zeg",
-            "Dit verdient meer views",
             "IK GA JE PAKKEN! 👻",
-            "FunnyAI is de beste!",
-            "Niet slapen vannacht 😱",
-            "Hahaha geniaal dit",
-            "Echt AI? Niet te geloven",
-            "Team FunnyAI! 💪"
+            "FunnyAI is de beste!"
         ];
     }
 }
 
-// Genereer random reacties voor een video
 function getRandomComments() {
     if (commentsDatabase.length === 0) return [];
-    
-    // Random aantal tussen 1 en 45
     const numberOfComments = Math.floor(Math.random() * 45) + 1;
-    
-    // Maak kopie en shuffle voor unieke selectie
     const shuffled = [...commentsDatabase].sort(() => 0.5 - Math.random());
-    
-    // Pak unieke reacties (geen duplicates binnen 1 video)
     const selected = shuffled.slice(0, Math.min(numberOfComments, commentsDatabase.length));
     
-    // Genereer gebruikers en tijden
     return selected.map((text, index) => ({
         id: index,
         text: text,
@@ -180,59 +162,43 @@ function getRandomComments() {
     }));
 }
 
-// Genereer random gebruikersnaam
 function generateUsername() {
-    const prefixes = ['@bob', '@ai', '@video', '@tiktok', '@user', '@filmpje', '@bobtop', '@creative', '@maker', '@fan', '@funnyai', '@pakkend'];
-    const suffixes = ['123', 'fan', 'lover', 'nl', 'official', 'xd', '4life', '_', '00', '69', '👻', '😂'];
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    return prefix + suffix + Math.floor(Math.random() * 100);
+    const prefixes = ['@bob', '@ai', '@user', '@fan', '@funnyai'];
+    const suffixes = ['123', 'fan', 'nl', 'xd', '👻'];
+    return prefixes[Math.floor(Math.random() * prefixes.length)] + 
+           suffixes[Math.floor(Math.random() * suffixes.length)] + 
+           Math.floor(Math.random() * 100);
 }
 
-// Genereer random tijd
 function getRandomTime() {
     const hours = Math.floor(Math.random() * 24);
-    const minutes = Math.floor(Math.random() * 60);
     const days = Math.floor(Math.random() * 7);
-    
     if (days === 0) return `${hours}u geleden`;
     if (days === 1) return 'Gisteren';
     return `${days} dagen geleden`;
 }
 
 // ---------- STORAGE & STATE ----------
-const STORAGE_KEY = 'bobtop_saved_items';
 const LIKE_DISLIKE_KEY = 'bobtop_preferences';
-let currentFilterChannel = null;
+let currentChannelFilter = null;
 let lastPlayedVideoId = null;
 let videoPlayCount = new Map();
-
-// Comment state per video
 const videoCommentsCache = new Map();
+let currentSwipeIndex = 0;
+let swipeStartX = 0;
+let isSwiping = false;
 
-// ---------- HELPER FUNCTIES ----------
-function getSavedItems() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
-}
-
-function saveItemLocally(itemId) {
-    let saved = getSavedItems();
-    if (!saved.includes(itemId)) {
-        saved.push(itemId);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+// Groepeer videos per kanaal
+const channelVideos = {};
+videoDatabase.forEach(video => {
+    if (!channelVideos[video.channelId]) {
+        channelVideos[video.channelId] = [];
     }
-    return saved;
-}
+    channelVideos[video.channelId].push(video);
+});
 
-function unsaveItemLocally(itemId) {
-    let saved = getSavedItems().filter(id => id !== itemId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-    return saved;
-}
-
-function isItemSaved(itemId) {
-    return getSavedItems().includes(itemId);
-}
+// Lijst van kanalen in volgorde
+const channels = Object.keys(channelVideos);
 
 function getPreferences() {
     try { return JSON.parse(localStorage.getItem(LIKE_DISLIKE_KEY)) || {}; } catch { return {}; }
@@ -249,7 +215,6 @@ function getPreference(itemId) {
     return getPreferences()[itemId] || null;
 }
 
-// Genereer random likes
 function getRandomLikeCount(item, userLiked) {
     const base = item.baseLikes || 10000;
     const variation = Math.floor(Math.random() * 5000) - 2500;
@@ -258,7 +223,6 @@ function getRandomLikeCount(item, userLiked) {
     return count.toLocaleString();
 }
 
-// Genereer random dislikes
 function getRandomDislikeCount(item, userDisliked) {
     const base = item.baseDislikes || 500;
     const variation = Math.floor(Math.random() * 200) - 100;
@@ -267,87 +231,6 @@ function getRandomDislikeCount(item, userDisliked) {
     return count.toLocaleString();
 }
 
-// ---------- FILTER OP KANAAL ----------
-function filterByChannel(channelId) {
-    currentFilterChannel = channelId;
-    feedEl.innerHTML = '';
-    currentRenderedIds.clear();
-    lastPlayedVideoId = null;
-    
-    showToast(`📺 Alleen @${channelId}`);
-    
-    for (let i = 0; i < 3; i++) {
-        addItemToFeed();
-    }
-}
-
-// ---------- GEWOGEN RANDOM MET DUBBELCHECK ----------
-function getWeightedRandomItem() {
-    let available = currentFilterChannel 
-        ? videoDatabase.filter(item => item.channelId === currentFilterChannel)
-        : [...videoDatabase];
-    
-    if (available.length === 0) {
-        currentFilterChannel = null;
-        available = [...videoDatabase];
-    }
-    
-    if (available.length === 1) {
-        return available[0];
-    }
-    
-    const prefs = getPreferences();
-    const playCounts = videoPlayCount;
-    
-    let candidates = available.map(item => {
-        let baseWeight = item.weight || 1;
-        
-        const pref = prefs[item.id];
-        if (pref === 'dislike') baseWeight = 0.02;
-        else if (pref === 'like') baseWeight *= 2.2;
-        
-        if (item.id === lastPlayedVideoId) {
-            baseWeight *= 0.1;
-        }
-        
-        const playCount = playCounts.get(item.id) || 0;
-        if (playCount > 2) {
-            baseWeight *= 0.7;
-        }
-        
-        return { item, weight: Math.max(0.01, baseWeight) };
-    });
-    
-    const total = candidates.reduce((sum, c) => sum + c.weight, 0);
-    let rand = Math.random() * total;
-    
-    for (let c of candidates) {
-        if (rand < c.weight) {
-            const currentCount = videoPlayCount.get(c.item.id) || 0;
-            videoPlayCount.set(c.item.id, currentCount + 1);
-            lastPlayedVideoId = c.item.id;
-            return c.item;
-        }
-        rand -= c.weight;
-    }
-    
-    const fallback = available[0];
-    videoPlayCount.set(fallback.id, (videoPlayCount.get(fallback.id) || 0) + 1);
-    lastPlayedVideoId = fallback.id;
-    return fallback;
-}
-
-// ---------- FEED & SCROLL ----------
-let loadedItemCount = 0;
-let currentRenderedIds = new Set();
-const feedEl = document.getElementById('feed');
-const sentinel = document.getElementById('sentinel');
-const actionPanelTemplate = document.getElementById('action-panel-template').innerHTML;
-const shareMenu = document.getElementById('share-menu');
-const commentsModal = document.getElementById('comments-modal');
-let currentShareItemId = null;
-let currentCommentItemId = null;
-
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
@@ -355,10 +238,10 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2300);
 }
 
-// ---------- VIDEO SETUP - ALLEEN 1 VIDEO TEGELIJK MET AUDIO ----------
+// ---------- VIDEO SETUP ----------
 function setupVideo(video, itemDiv, mediaItem) {
     video.loop = true;
-    video.muted = false; // Niet gemuteerd, maar we zorgen dat maar 1 video audio heeft
+    video.muted = false;
     video.playsInline = true;
     video.preload = 'auto';
     
@@ -367,43 +250,169 @@ function setupVideo(video, itemDiv, mediaItem) {
         video.src = FALLBACK_VIDEO_URL;
     };
     
-    // Observer om te zien welke video in beeld is
     const videoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.7;
             
             if (isVisible) {
-                // Deze video is zichtbaar - pauzeer alle andere videos eerst
-                document.querySelectorAll('.feed-item video').forEach(otherVideo => {
+                document.querySelectorAll(`.swipe-item[data-channel="${currentChannelFilter || 'all'}"] video`).forEach(otherVideo => {
                     if (otherVideo !== video) {
                         otherVideo.pause();
-                        // Zorg dat andere videos gemute zijn voor de zekerheid
                         otherVideo.muted = true;
                     }
                 });
                 
-                // Speel deze video af en zet audio aan
                 video.muted = false;
                 video.play().catch(() => {
-                    // Autoplay geblokkeerd? Zet mute dan uit en probeer opnieuw
                     video.muted = false;
                     video.play().catch(e => console.log('Kan niet afspelen zonder interactie'));
                 });
-                
-                console.log(`▶️ Video ${mediaItem.id} speelt af met audio`);
             } else {
-                // Deze video is niet zichtbaar - pauzeer en mute
                 video.pause();
                 video.muted = true;
             }
         });
-    }, { threshold: 0.7 }); // 70% van de video moet zichtbaar zijn
+    }, { threshold: 0.7 });
     
     videoObserver.observe(video);
     itemDiv._videoObserver = videoObserver;
-    
-    // Zorg dat video begint met mute aan (wordt pas uitgezet als hij in beeld komt)
     video.muted = true;
+}
+
+// ---------- FEED ITEM CREATIE ----------
+function createFeedItem(mediaItem) {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'feed-item';
+    itemDiv.dataset.itemId = mediaItem.id;
+
+    const mediaContainer = document.createElement('div');
+    mediaContainer.className = 'media-container';
+
+    let mediaEl;
+    if (mediaItem.type === 'video') {
+        mediaEl = document.createElement('video');
+        mediaEl.src = mediaItem.url;
+        setupVideo(mediaEl, itemDiv, mediaItem);
+    } else {
+        mediaEl = document.createElement('img');
+        mediaEl.src = mediaItem.url;
+        mediaEl.alt = mediaItem.title || 'AI afbeelding';
+        mediaEl.loading = 'lazy';
+    }
+
+    mediaContainer.appendChild(mediaEl);
+    itemDiv.appendChild(mediaContainer);
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'item-info';
+    infoDiv.innerHTML = `
+        <div class="channel-name">
+            <a href="#" class="channel-link" data-channel-id="${mediaItem.channelId}">
+                @${mediaItem.channelId}
+            </a>
+            <span class="content-badge">${mediaItem.contentType}</span>
+        </div>
+        <div class="title-description">
+            <strong>${mediaItem.title}</strong> · ${mediaItem.description}
+        </div>
+    `;
+    itemDiv.appendChild(infoDiv);
+
+    infoDiv.querySelector('.channel-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        filterToChannel(mediaItem.channelId);
+    });
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.innerHTML = document.getElementById('action-panel-template').innerHTML;
+    const actionButtons = actionsDiv.firstElementChild.cloneNode(true);
+    
+    const likeBtn = actionButtons.querySelector('.like-btn');
+    const dislikeBtn = actionButtons.querySelector('.dislike-btn');
+    const saveBtn = actionButtons.querySelector('.save-btn');
+    const commentBtn = actionButtons.querySelector('.comment-btn');
+    const shareBtn = actionButtons.querySelector('.share-btn');
+    
+    likeBtn.dataset.id = mediaItem.id;
+    dislikeBtn.dataset.id = mediaItem.id;
+    saveBtn.dataset.id = mediaItem.id;
+    commentBtn.dataset.id = mediaItem.id;
+    shareBtn.dataset.id = mediaItem.id;
+
+    const pref = getPreference(mediaItem.id);
+    
+    likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(mediaItem, pref === 'like');
+    dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(mediaItem, pref === 'dislike');
+    commentBtn.querySelector('.comment-count').textContent = Math.floor(Math.random() * 45) + 1;
+    saveBtn.querySelector('.save-count').textContent = '0';
+    
+    if (pref === 'like') likeBtn.classList.add('liked');
+    if (pref === 'dislike') dislikeBtn.classList.add('disliked');
+
+    likeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = Number(likeBtn.dataset.id);
+        const item = videoDatabase.find(v => v.id === id);
+        const current = getPreference(id);
+        
+        if (current === 'like') {
+            setPreference(id, null);
+            likeBtn.classList.remove('liked');
+            likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(item, false);
+            showToast('❤️ Like verwijderd');
+        } else {
+            setPreference(id, 'like');
+            likeBtn.classList.add('liked');
+            likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(item, true);
+            if (current === 'dislike') {
+                dislikeBtn.classList.remove('disliked');
+                dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(item, false);
+            }
+            showToast('❤️ Video geliked!');
+        }
+    });
+
+    dislikeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = Number(dislikeBtn.dataset.id);
+        const item = videoDatabase.find(v => v.id === id);
+        const current = getPreference(id);
+        
+        if (current === 'dislike') {
+            setPreference(id, null);
+            dislikeBtn.classList.remove('disliked');
+            dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(item, false);
+            showToast('👎 Dislike verwijderd');
+        } else {
+            setPreference(id, 'dislike');
+            dislikeBtn.classList.add('disliked');
+            dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(item, true);
+            if (current === 'like') {
+                likeBtn.classList.remove('liked');
+                likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(item, false);
+            }
+            showToast('👎 Dislike geplaatst');
+        }
+    });
+
+    saveBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast('💾 Opgeslagen! (Lijsten komen later)');
+    });
+
+    commentBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCommentsModal(mediaItem);
+    });
+
+    shareBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentShareItemId = mediaItem.id;
+        openShareMenu(mediaItem);
+    });
+
+    itemDiv.appendChild(actionButtons);
+    return itemDiv;
 }
 
 // ---------- COMMENTS MODAL ----------
@@ -421,7 +430,7 @@ function openCommentsModal(mediaItem) {
             <div class="comment-body">
                 <div class="comment-author">
                     ${comment.author}
-                    ${comment.verified ? '<span style="color: #3897f0;"> ✓</span>' : ''}
+                    ${comment.verified ? ' ✓' : ''}
                     <span class="comment-time">${comment.time}</span>
                 </div>
                 <div class="comment-text">${comment.text}</div>
@@ -433,276 +442,223 @@ function openCommentsModal(mediaItem) {
         </div>
     `).join('');
     
-    const headerTitle = commentsModal.querySelector('h2');
-    headerTitle.innerHTML = `💬 Reacties <span style="color: #999; font-size: 0.9rem;">(${comments.length})</span>`;
-    
-    commentsModal.classList.add('active');
-    currentCommentItemId = mediaItem.id;
-    
-    const commentBtn = document.querySelector(`.feed-item[data-item-id="${mediaItem.id}"] .comment-btn`);
-    if (commentBtn) {
-        commentBtn.classList.add('active');
-    }
-    
+    document.getElementById('comments-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
-// ---------- CLOSE MODALS ----------
 function closeCommentsModal() {
-    commentsModal.classList.remove('active');
-    document.querySelectorAll('.comment-btn.active').forEach(btn => {
-        btn.classList.remove('active');
-    });
+    document.getElementById('comments-modal').classList.remove('active');
     document.body.style.overflow = 'auto';
-    currentCommentItemId = null;
-}
-
-function closeShareMenu() {
-    shareMenu.classList.remove('active');
-    document.body.style.overflow = 'auto';
-}
-
-// ---------- FEED ITEM CREATIE ----------
-function createFeedItem(mediaItem) {
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'feed-item';
-    itemDiv.dataset.itemId = mediaItem.id;
-    itemDiv.dataset.type = mediaItem.type;
-    itemDiv.dataset.url = mediaItem.url;
-
-    const mediaContainer = document.createElement('div');
-    mediaContainer.className = 'media-container';
-
-    let mediaEl;
-    if (mediaItem.type === 'video') {
-        mediaEl = document.createElement('video');
-        mediaEl.src = mediaItem.url;
-        setupVideo(mediaEl, itemDiv, mediaItem);
-    } else {
-        mediaEl = document.createElement('img');
-        mediaEl.src = mediaItem.url;
-        mediaEl.alt = mediaItem.title || 'AI afbeelding';
-        mediaEl.loading = 'lazy';
-        mediaEl.onerror = () => {
-            console.warn(`Afbeelding ${mediaItem.url} niet gevonden`);
-            itemDiv.remove();
-            maybeLoadMore();
-        };
-    }
-
-    mediaContainer.appendChild(mediaEl);
-    itemDiv.appendChild(mediaContainer);
-
-    const infoDiv = document.createElement('div');
-    infoDiv.className = 'item-info';
-    infoDiv.innerHTML = `
-        <div class="channel-name">
-            <a href="#" class="channel-link" data-channel-id="${mediaItem.channelId}">
-                @${mediaItem.channelId || mediaItem.channel}
-            </a>
-            <span class="content-badge">${mediaItem.contentType || 'AI'}</span>
-        </div>
-        <div class="title-description">
-            <strong>${mediaItem.title || ''}</strong> ${mediaItem.description ? '· ' + mediaItem.description : ''}
-        </div>
-    `;
-    itemDiv.appendChild(infoDiv);
-
-    const channelLink = infoDiv.querySelector('.channel-link');
-    channelLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        filterByChannel(mediaItem.channelId);
-    });
-
-    const actionsDiv = document.createElement('div');
-    actionsDiv.innerHTML = actionPanelTemplate;
-    const actionButtons = actionsDiv.firstElementChild.cloneNode(true);
-    
-    const likeBtn = actionButtons.querySelector('.like-btn');
-    const dislikeBtn = actionButtons.querySelector('.dislike-btn');
-    const saveBtn = actionButtons.querySelector('.save-btn');
-    const commentBtn = actionButtons.querySelector('.comment-btn');
-    const shareBtn = actionButtons.querySelector('.share-btn');
-    
-    likeBtn.dataset.id = mediaItem.id;
-    dislikeBtn.dataset.id = mediaItem.id;
-    saveBtn.dataset.id = mediaItem.id;
-    commentBtn.dataset.id = mediaItem.id;
-    shareBtn.dataset.id = mediaItem.id;
-
-    const pref = getPreference(mediaItem.id);
-    const userLiked = pref === 'like';
-    const userDisliked = pref === 'dislike';
-    const saved = isItemSaved(mediaItem.id);
-    
-    const likeCountSpan = likeBtn.querySelector('.like-count');
-    const dislikeCountSpan = dislikeBtn.querySelector('.dislike-count');
-    const saveCountSpan = saveBtn.querySelector('.save-count');
-    const commentCountSpan = commentBtn.querySelector('.comment-count');
-    
-    const commentCount = Math.floor(Math.random() * 45) + 1;
-    commentCountSpan.textContent = commentCount;
-    
-    likeCountSpan.textContent = getRandomLikeCount(mediaItem, userLiked);
-    dislikeCountSpan.textContent = getRandomDislikeCount(mediaItem, userDisliked);
-    
-    if (saved) {
-        saveBtn.classList.add('saved');
-        saveCountSpan.textContent = '1';
-    } else {
-        saveCountSpan.textContent = '0';
-    }
-    
-    if (userLiked) {
-        likeBtn.classList.add('liked');
-    }
-    if (userDisliked) {
-        dislikeBtn.classList.add('disliked');
-    }
-
-    likeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        const id = Number(likeBtn.dataset.id);
-        const current = getPreference(id);
-        const item = videoDatabase.find(v => v.id === id);
-        
-        if (current === 'like') {
-            setPreference(id, null);
-            likeBtn.classList.remove('liked');
-            likeCountSpan.textContent = getRandomLikeCount(item, false);
-            showToast('❤️ Like verwijderd');
-        } else {
-            setPreference(id, 'like');
-            likeBtn.classList.add('liked');
-            likeCountSpan.textContent = getRandomLikeCount(item, true);
-            
-            if (current === 'dislike') {
-                dislikeBtn.classList.remove('disliked');
-                dislikeCountSpan.textContent = getRandomDislikeCount(item, false);
-            }
-            showToast('❤️ Video geliked!');
-        }
-    });
-
-    dislikeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        const id = Number(dislikeBtn.dataset.id);
-        const current = getPreference(id);
-        const item = videoDatabase.find(v => v.id === id);
-        
-        if (current === 'dislike') {
-            setPreference(id, null);
-            dislikeBtn.classList.remove('disliked');
-            dislikeCountSpan.textContent = getRandomDislikeCount(item, false);
-            showToast('👎 Dislike verwijderd');
-        } else {
-            setPreference(id, 'dislike');
-            dislikeBtn.classList.add('disliked');
-            dislikeCountSpan.textContent = getRandomDislikeCount(item, true);
-            
-            if (current === 'like') {
-                likeBtn.classList.remove('liked');
-                likeCountSpan.textContent = getRandomLikeCount(item, false);
-            }
-            showToast('👎 Dislike geplaatst');
-        }
-    });
-
-    saveBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        const id = Number(saveBtn.dataset.id);
-        const isSaved = isItemSaved(id);
-        
-        if (isSaved) {
-            unsaveItemLocally(id);
-            saveBtn.classList.remove('saved');
-            saveCountSpan.textContent = '0';
-            showToast('❌ Verwijderd uit opgeslagen');
-        } else {
-            saveItemLocally(id);
-            saveBtn.classList.add('saved');
-            saveCountSpan.textContent = '1';
-            showToast('✅ Opgeslagen in Bobtop-lijst');
-        }
-    });
-
-    commentBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        openCommentsModal(mediaItem);
-    });
-
-    shareBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        currentShareItemId = mediaItem.id;
-        openShareMenu(mediaItem);
-    });
-
-    itemDiv.appendChild(actionButtons);
-    return itemDiv;
 }
 
 // ---------- SHARE MENU ----------
+let currentShareItemId = null;
+
 function openShareMenu(mediaItem) {
+    const shareMenu = document.getElementById('share-menu');
     shareMenu.classList.add('active');
     document.body.style.overflow = 'hidden';
-    
-    const whatsappBtn = document.getElementById('share-whatsapp');
-    const copyBtn = document.getElementById('share-copy');
-    const closeBtn = shareMenu.querySelector('.share-close');
-    
-    const newWhatsapp = whatsappBtn.cloneNode(true);
-    const newCopy = copyBtn.cloneNode(true);
-    const newClose = closeBtn.cloneNode(true);
-    whatsappBtn.parentNode.replaceChild(newWhatsapp, whatsappBtn);
-    copyBtn.parentNode.replaceChild(newCopy, copyBtn);
-    shareMenu.querySelector('.share-close').replaceWith(newClose);
-    
-    newWhatsapp.addEventListener('click', () => {
-        const text = `📱 Check dit filmpje op Bobtop: ${mediaItem.title} door @${mediaItem.channelId}`;
-        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-        closeShareMenu();
-        showToast('📤 Gedeeld via WhatsApp');
-    });
-    
-    newCopy.addEventListener('click', async () => {
-        const shareUrl = `${window.location.origin}${window.location.pathname}?video=${mediaItem.id}`;
-        try {
-            await navigator.clipboard.writeText(shareUrl);
-            showToast('🔗 Link gekopieerd naar klembord');
-        } catch {
-            const textarea = document.createElement('textarea');
-            textarea.value = shareUrl;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showToast('🔗 Link gekopieerd');
-        }
-        closeShareMenu();
-    });
-    
-    newClose.addEventListener('click', closeShareMenu);
 }
 
-// ---------- MODAL EVENT LISTENERS ----------
-shareMenu.addEventListener('click', (e) => {
-    if (e.target === shareMenu) {
-        closeShareMenu();
+function closeShareMenu() {
+    document.getElementById('share-menu').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// ---------- KANAAL FILTER FUNCTIES ----------
+function filterToChannel(channelId) {
+    const index = channels.indexOf(channelId);
+    if (index !== -1) {
+        currentSwipeIndex = index;
+        updateSwipePosition();
+        updateActiveProfile();
+        showToast(`📺 @${channelId}`);
     }
+}
+
+function updateActiveProfile() {
+    document.querySelectorAll('.channel-profile').forEach(profile => {
+        const channelId = profile.dataset.channelId;
+        if (channelId === channels[currentSwipeIndex]) {
+            profile.classList.add('active');
+        } else {
+            profile.classList.remove('active');
+        }
+    });
+}
+
+// ---------- SWIPE FUNCTIES ----------
+function initSwipe() {
+    const container = document.querySelector('.swipe-container');
+    const wrapper = document.querySelector('.swipe-wrapper');
+    
+    // Maak swipe items voor elk kanaal
+    channels.forEach(channelId => {
+        const swipeItem = document.createElement('div');
+        swipeItem.className = 'swipe-item';
+        swipeItem.dataset.channel = channelId;
+        
+        const feed = document.createElement('div');
+        feed.className = 'feed';
+        
+        // Voeg alle videos van dit kanaal toe
+        channelVideos[channelId].forEach(video => {
+            feed.appendChild(createFeedItem(video));
+        });
+        
+        swipeItem.appendChild(feed);
+        wrapper.appendChild(swipeItem);
+    });
+    
+    // Voeg sentinel toe aan laatste feed
+    const lastSwipeItem = wrapper.lastElementChild;
+    if (lastSwipeItem) {
+        const sentinel = document.createElement('div');
+        sentinel.className = 'bottom-sentinel';
+        sentinel.id = 'sentinel';
+        lastSwipeItem.querySelector('.feed').appendChild(sentinel);
+    }
+    
+    // Swipe event listeners
+    container.addEventListener('touchstart', (e) => {
+        swipeStartX = e.touches[0].clientX;
+        isSwiping = true;
+    }, { passive: true });
+    
+    container.addEventListener('touchmove', (e) => {
+        if (!isSwiping) return;
+        
+        const currentX = e.touches[0].clientX;
+        const diff = currentX - swipeStartX;
+        const swipeWidth = window.innerWidth;
+        
+        // Alleen swipen als het geen verticale scroll is
+        if (Math.abs(diff) > 20) {
+            e.preventDefault();
+            
+            // Bereken nieuwe positie met weerstand
+            let newPosition = (currentSwipeIndex * -swipeWidth) + diff * 0.3;
+            wrapper.style.transform = `translateX(${newPosition}px)`;
+            wrapper.style.transition = 'none';
+        }
+    }, { passive: false });
+    
+    container.addEventListener('touchend', (e) => {
+        if (!isSwiping) return;
+        
+        const endX = e.changedTouches[0].clientX;
+        const diff = endX - swipeStartX;
+        const swipeWidth = window.innerWidth;
+        
+        wrapper.style.transition = 'transform 0.3s ease-out';
+        
+        if (Math.abs(diff) > 50) {
+            if (diff > 0 && currentSwipeIndex > 0) {
+                // Swipe naar rechts (vorig kanaal)
+                currentSwipeIndex--;
+            } else if (diff < 0 && currentSwipeIndex < channels.length - 1) {
+                // Swipe naar links (volgend kanaal)
+                currentSwipeIndex++;
+            }
+        }
+        
+        updateSwipePosition();
+        updateActiveProfile();
+        
+        isSwiping = false;
+        swipeStartX = 0;
+    }, { passive: true });
+}
+
+function updateSwipePosition() {
+    const wrapper = document.querySelector('.swipe-wrapper');
+    const swipeWidth = window.innerWidth;
+    wrapper.style.transform = `translateX(-${currentSwipeIndex * swipeWidth}px)`;
+}
+
+// ---------- KANAAL PROFIELEN ----------
+function createChannelProfiles() {
+    const sidebar = document.createElement('div');
+    sidebar.className = 'channel-sidebar';
+    
+    channels.forEach(channelId => {
+        const profile = document.createElement('div');
+        profile.className = `channel-profile ${channelId === channels[0] ? 'active' : ''}`;
+        profile.dataset.channelId = channelId;
+        
+        const img = document.createElement('img');
+        img.src = `${channelId.toUpperCase()}.png`;
+        img.alt = `@${channelId}`;
+        img.onerror = () => {
+            img.src = 'https://via.placeholder.com/60/333/fff?text=' + channelId[0].toUpperCase();
+        };
+        
+        profile.appendChild(img);
+        
+        profile.addEventListener('click', () => {
+            filterToChannel(channelId);
+        });
+        
+        sidebar.appendChild(profile);
+    });
+    
+    document.querySelector('.app-container').appendChild(sidebar);
+}
+
+// ---------- SHARE EVENT LISTENERS ----------
+document.getElementById('share-whatsapp')?.addEventListener('click', () => {
+    const currentItem = videoDatabase.find(v => v.id === currentShareItemId);
+    if (currentItem) {
+        const text = `📱 Check dit filmpje op Bobtop: ${currentItem.title} door @${currentItem.channelId} - ${window.location.href}?video=${currentItem.id}`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+        showToast('📤 Gedeeld via WhatsApp');
+    }
+    closeShareMenu();
 });
 
-commentsModal.addEventListener('click', (e) => {
-    if (e.target === commentsModal) {
+document.getElementById('share-discord')?.addEventListener('click', () => {
+    const currentItem = videoDatabase.find(v => v.id === currentShareItemId);
+    
+    if (currentItem) {
+        const shareText = `**🎬 ${currentItem.title}**\n` +
+                         `**👤 Kanaal:** @${currentItem.channelId}\n` +
+                         `**📝 Beschrijving:** ${currentItem.description}\n` +
+                         `**🔗 Link:** ${window.location.origin}${window.location.pathname}?video=${currentItem.id}\n\n` +
+                         `_Gedeeld via Bobtop_ 📱`;
+        
+        navigator.clipboard.writeText(shareText).then(() => {
+            showToast('📋 Discord bericht gekopieerd!');
+            
+            setTimeout(() => {
+                if (confirm('📋 Bericht gekopieerd!\n\nWil je Discord openen om te plakken?')) {
+                    window.open('discord://', '_blank');
+                    setTimeout(() => {
+                        window.open('https://discord.com/channels/@me', '_blank');
+                    }, 1000);
+                }
+            }, 100);
+        });
+    }
+    closeShareMenu();
+});
+
+document.getElementById('share-copy')?.addEventListener('click', async () => {
+    const currentItem = videoDatabase.find(v => v.id === currentShareItemId);
+    const shareUrl = currentItem ? 
+        `${window.location.origin}${window.location.pathname}?video=${currentItem.id}` : 
+        window.location.href;
+    
+    await navigator.clipboard.writeText(shareUrl);
+    showToast('🔗 Link gekopieerd!');
+    closeShareMenu();
+});
+
+document.querySelector('.share-close')?.addEventListener('click', closeShareMenu);
+
+// Modal event listeners
+document.getElementById('comments-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('comments-modal')) {
         closeCommentsModal();
     }
 });
@@ -710,110 +666,43 @@ commentsModal.addEventListener('click', (e) => {
 document.querySelector('.close-comments')?.addEventListener('click', closeCommentsModal);
 document.querySelector('.close-comments-btn')?.addEventListener('click', closeCommentsModal);
 
-// ---------- INFINITE SCROLL ----------
-let isLoading = false;
-let pendingLoad = false;
-
-function addItemToFeed() {
-    if (isLoading) return;
-    isLoading = true;
+// ---------- INIT ----------
+async function init() {
+    await loadComments();
     
-    const item = getWeightedRandomItem();
+    // Maak app container
+    const appContainer = document.createElement('div');
+    appContainer.className = 'app-container';
+    document.body.appendChild(appContainer);
     
-    const lastItem = feedEl.lastChild;
-    if (lastItem && lastItem.dataset.itemId == item.id) {
-        console.log('⚠️ Dubbele video voorkomen, probeer opnieuw');
-        isLoading = false;
-        setTimeout(() => addItemToFeed(), 50);
-        return;
-    }
-
-    const feedItem = createFeedItem(item);
-    feedEl.appendChild(feedItem);
-    currentRenderedIds.add(item.id);
-    loadedItemCount++;
+    // Maak swipe container
+    const swipeContainer = document.createElement('div');
+    swipeContainer.className = 'swipe-container';
+    const swipeWrapper = document.createElement('div');
+    swipeWrapper.className = 'swipe-wrapper';
+    swipeContainer.appendChild(swipeWrapper);
+    appContainer.appendChild(swipeContainer);
     
-    setTimeout(() => {
-        isLoading = false;
-        if (pendingLoad) {
-            pendingLoad = false;
-            maybeLoadMore();
-        }
-    }, 300);
+    // Verplaats feed naar swipe wrapper
+    const feed = document.getElementById('feed');
+    feed.remove();
+    swipeWrapper.appendChild(feed);
+    
+    // Initialiseer swipe en profielen
+    createChannelProfiles();
+    initSwipe();
+    
+    // Update active profile
+    updateActiveProfile();
 }
 
-function maybeLoadMore() {
-    if (isLoading) {
-        pendingLoad = true;
-        return;
-    }
-    addItemToFeed();
-}
+init();
 
-const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-        maybeLoadMore();
-    }
-}, { 
-    threshold: 0.1,
-    rootMargin: '100px'
-});
-observer.observe(sentinel);
-
-// ---------- CLEANUP ----------
-function cleanupObservers() {
+// Cleanup
+window.addEventListener('beforeunload', () => {
     document.querySelectorAll('.feed-item').forEach(item => {
         if (item._videoObserver) {
             item._videoObserver.disconnect();
         }
     });
-}
-
-// ---------- CONTROLEER OF VIDEO BESTANDEN BESTAAN ----------
-async function checkVideoFiles() {
-    for (const video of videoDatabase) {
-        try {
-            const response = await fetch(video.url, { method: 'HEAD' });
-            if (!response.ok) {
-                console.warn(`⚠️ Video bestand niet gevonden: ${video.url}`);
-                video.url = FALLBACK_VIDEO_URL; // Gebruik fallback
-            } else {
-                console.log(`✅ Video gevonden: ${video.url}`);
-            }
-        } catch (error) {
-            console.warn(`⚠️ Kan video niet controleren: ${video.url}`, error);
-            video.url = FALLBACK_VIDEO_URL;
-        }
-    }
-}
-
-// ---------- INIT ----------
-async function initFeed() {
-    await loadComments();
-    await checkVideoFiles(); // Controleer of video's bestaan
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoId = urlParams.get('video');
-    
-    if (videoId) {
-        const found = videoDatabase.find(v => v.id === Number(videoId));
-        if (found) {
-            const feedItem = createFeedItem(found);
-            feedEl.appendChild(feedItem);
-            currentRenderedIds.add(found.id);
-            loadedItemCount++;
-            
-            setTimeout(() => {
-                feedItem.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
-    }
-    
-    for (let i = 0; i < 3; i++) {
-        addItemToFeed();
-    }
-}
-
-initFeed();
-
-window.addEventListener('beforeunload', cleanupObservers);
+});
