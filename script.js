@@ -1,4 +1,3 @@
-// ---------- BOBTOP 5.0 - CSS SNAP VERSIE - ALLEEN 1 VIDEO TEGELIJK ----------
 const videoDatabase = [
     {
         id: 1,
@@ -22,7 +21,7 @@ const videoDatabase = [
         title: 'HEMA Regenboogrookworst',
         description: 'Koop nu HEMA regenboogrookworst!',
         contentType: 'Real',
-        weight: 0.5,
+        weight: 0.8,
         baseLikes: 8900,
         baseDislikes: 450
     },
@@ -35,7 +34,7 @@ const videoDatabase = [
         title: 'Koop deze mevrouw bij ons!',
         description: 'Ze ligt nu in de winkel: henatje.',
         contentType: 'Real',
-        weight: 0.5,
+        weight: 0.8,
         baseLikes: 8900,
         baseDislikes: 450
     },
@@ -61,9 +60,35 @@ const videoDatabase = [
         title: 'IK GA JE PAKKEN! 👻',
         description: 'Hilarische AI video - niet alleen kijken voor het slapen gaan',
         contentType: 'AI',
-        weight: 1.8,
+        weight: 1.0,
         baseLikes: 34200,
         baseDislikes: 89
+    },
+    {
+        id: 6,
+        type: 'photo',
+        url: 'DRIPSKIPPER-zie-mijn-drip-pak.png',
+        channel: 'DripSkipper',
+        channelId: 'dripskipper',
+        title: 'Zie mijn drippak.',
+        description: 'Ik ben #DripSkipper en ik heb een drippak.',
+        contentType: 'Real',
+        weight: 1.0,
+        baseLikes: 350,
+        baseDislikes: 10
+    },
+     {
+        id: 7,
+        type: 'video',
+        url: 'DRIPSKIPPERinvullen',
+        channel: 'DripSkipper',
+        channelId: 'dripskipper',
+        title: 'Zie mijn nieuwe drippak.',
+        description: 'Ik ben #DripSkipper en ik heb heel veel drippakken.',
+        contentType: 'Real',
+        weight: 1.0,
+        baseLikes: 350,
+        baseDislikes: 10
     },
     {
         id: 6,
