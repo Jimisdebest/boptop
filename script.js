@@ -1,4 +1,4 @@
-// ---------- BOBTOP 6.0 - MET SWIPE, PROFIEL FOTO, GEEN DISLIKES ----------
+// ---------- BOBTOP 7.0 - MET JOUW ICONEN, ABONNEREN, DISCORD & SNAPCHAT ----------
 const videoDatabase = [
     {
         id: 1,
@@ -11,7 +11,7 @@ const videoDatabase = [
         contentType: 'Real',
         weight: 1,
         baseLikes: 12400,
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=cleangirl'
+        profileImage: 'HEMA.png' // Vervang met jouw echte profielfoto
     },
     {
         id: 2,
@@ -24,7 +24,7 @@ const videoDatabase = [
         contentType: 'Real',
         weight: 1,
         baseLikes: 8900,
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hema'
+        profileImage: 'HEMA.png'
     },
     {
         id: 3,
@@ -37,7 +37,7 @@ const videoDatabase = [
         contentType: 'AI',
         weight: 1,
         baseLikes: 15600,
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=minecraft'
+        profileImage: 'DRIPSKIPPER.png'
     },
     {
         id: 4,
@@ -50,9 +50,35 @@ const videoDatabase = [
         contentType: 'AI',
         weight: 1.8,
         baseLikes: 34200,
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=funnyai'
+        profileImage: 'FUNNYAI.png'
     }
 ];
+
+// ---------- ABONNEMENTEN (localStorage) ----------
+const SUBSCRIPTIONS_KEY = 'bobtop_subscriptions';
+
+function getSubscriptions() {
+    try { return JSON.parse(localStorage.getItem(SUBSCRIPTIONS_KEY)) || []; } catch { return []; }
+}
+
+function subscribeToChannel(channelId) {
+    let subs = getSubscriptions();
+    if (!subs.includes(channelId)) {
+        subs.push(channelId);
+        localStorage.setItem(SUBSCRIPTIONS_KEY, JSON.stringify(subs));
+    }
+    return subs;
+}
+
+function unsubscribeFromChannel(channelId) {
+    let subs = getSubscriptions().filter(id => id !== channelId);
+    localStorage.setItem(SUBSCRIPTIONS_KEY, JSON.stringify(subs));
+    return subs;
+}
+
+function isSubscribed(channelId) {
+    return getSubscriptions().includes(channelId);
+}
 
 // ---------- REACTIES ----------
 let commentsDatabase = [];
@@ -172,7 +198,7 @@ const videoCommentsCache = new Map();
 
 // ---------- FILTER OP KANAAL (voor swipe naar rechts) ----------
 function filterByChannel(channelId) {
-    if (currentFilterChannel === channelId) return; // Al bezig
+    if (currentFilterChannel === channelId) return;
     
     currentFilterChannel = channelId;
     feedEl.innerHTML = '';
@@ -188,7 +214,7 @@ function filterByChannel(channelId) {
 
 // ---------- RANDOM FEED (voor swipe omlaag) ----------
 function showRandomFeed() {
-    if (currentFilterChannel === null) return; // Al random
+    if (currentFilterChannel === null) return;
     
     currentFilterChannel = null;
     feedEl.innerHTML = '';
@@ -274,23 +300,65 @@ function showToast(msg) {
 }
 
 // ---------- ZOEKBALK ----------
-searchInput.addEventListener('focus', () => {
-    // Wordt groter via CSS
-});
-
-searchInput.addEventListener('blur', () => {
-    if (searchInput.value.length === 0) {
-        // Blijft klein als er niets is ingevuld
-    }
-});
-
 searchInput.addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase();
     if (query.length > 2) {
-        // Hier kun je zoekfunctionaliteit toevoegen
         console.log('Zoeken naar:', query);
+        // Hier kun je zoekfunctionaliteit toevoegen
     }
 });
+
+// ---------- VLOEIENDERE SCROLL SNAP ----------
+function setupScrollSnap() {
+    let isSnapping = false;
+    let animationFrame;
+    
+    function checkAndSnap() {
+        if (isSnapping) {
+            animationFrame = requestAnimationFrame(checkAndSnap);
+            return;
+        }
+        
+        const feedItems = document.querySelectorAll('.feed-item');
+        if (feedItems.length === 0) {
+            animationFrame = requestAnimationFrame(checkAndSnap);
+            return;
+        }
+        
+        const viewportHeight = window.innerHeight;
+        let targetItem = null;
+        let bestMatch = 0;
+        
+        feedItems.forEach(item => {
+            const rect = item.getBoundingClientRect();
+            const visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
+            const visibleRatio = visibleHeight / viewportHeight;
+            
+            if (visibleRatio > bestMatch) {
+                bestMatch = visibleRatio;
+                targetItem = item;
+            }
+        });
+        
+        // Alleen snappen als video tussen 30% en 80% zichtbaar is
+        if (targetItem && bestMatch > 0.3 && bestMatch < 0.8) {
+            isSnapping = true;
+            
+            targetItem.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            
+            setTimeout(() => {
+                isSnapping = false;
+            }, 150); // Kortere timeout voor vloeiender gevoel
+        }
+        
+        animationFrame = requestAnimationFrame(checkAndSnap);
+    }
+    
+    animationFrame = requestAnimationFrame(checkAndSnap);
+}
 
 // ---------- SWIPE DETECTIE ----------
 let touchStartX = 0;
@@ -320,26 +388,19 @@ function handleSwipe() {
     const deltaX = touchEndX - touchStartX;
     const deltaY = touchEndY - touchStartY;
     
-    // Check of het een horizontale swipe is (meer X dan Y beweging)
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > MIN_SWIPE_DISTANCE) {
-        // Swipe naar RECHTS -> filter op huidige kanaal
-        if (deltaX > 0) {
-            const currentItem = getCurrentVideoItem();
-            if (currentItem && currentItem.dataset.channelId) {
-                filterByChannel(currentItem.dataset.channelId);
-            }
+    // Swipe naar RECHTS -> filter op huidig kanaal
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > MIN_SWIPE_DISTANCE && deltaX > 0) {
+        const currentItem = getCurrentVideoItem();
+        if (currentItem && currentItem.dataset.channelId) {
+            filterByChannel(currentItem.dataset.channelId);
         }
     }
-    // Check of het een verticale swipe is (meer Y dan X beweging)
-    else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > MIN_SWIPE_DISTANCE) {
-        // Swipe naar BENEDEN -> random feed
-        if (deltaY > 0) {
-            showRandomFeed();
-        }
+    // Swipe naar BENEDEN -> random feed
+    else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > MIN_SWIPE_DISTANCE && deltaY > 0) {
+        showRandomFeed();
     }
 }
 
-// Huidige video item ophalen (meest zichtbare)
 function getCurrentVideoItem() {
     const feedItems = document.querySelectorAll('.feed-item');
     if (feedItems.length === 0) return null;
@@ -362,7 +423,7 @@ function getCurrentVideoItem() {
     return bestItem;
 }
 
-// ---------- VIDEO SETUP (AUTOPLAY + LOOP) ----------
+// ---------- VIDEO SETUP ----------
 function setupVideo(video, itemDiv, mediaItem) {
     video.loop = true;
     video.muted = false;
@@ -384,13 +445,6 @@ function setupVideo(video, itemDiv, mediaItem) {
                         })
                         .catch(e => {
                             console.log('🔇 Autoplay geblokkeerd');
-                            const playOnInteraction = () => {
-                                video.play();
-                                document.removeEventListener('click', playOnInteraction);
-                                document.removeEventListener('touchstart', playOnInteraction);
-                            };
-                            document.addEventListener('click', playOnInteraction, { once: true });
-                            document.addEventListener('touchstart', playOnInteraction, { once: true });
                         });
                 }
             } else {
@@ -412,56 +466,6 @@ function setupVideo(video, itemDiv, mediaItem) {
     
     itemDiv._videoObserver = videoObserver;
     itemDiv.dataset.channelId = mediaItem.channelId;
-}
-
-// ---------- SCROLL SNAP ----------
-function setupScrollSnap() {
-    let isSnapping = false;
-    
-    function checkAndSnap() {
-        if (isSnapping) {
-            requestAnimationFrame(checkAndSnap);
-            return;
-        }
-        
-        const feedItems = document.querySelectorAll('.feed-item');
-        if (feedItems.length === 0) {
-            requestAnimationFrame(checkAndSnap);
-            return;
-        }
-        
-        const viewportHeight = window.innerHeight;
-        let targetItem = null;
-        let bestMatch = 0;
-        
-        feedItems.forEach(item => {
-            const rect = item.getBoundingClientRect();
-            const visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
-            const visibleRatio = visibleHeight / viewportHeight;
-            
-            if (visibleRatio > bestMatch) {
-                bestMatch = visibleRatio;
-                targetItem = item;
-            }
-        });
-        
-        if (targetItem && bestMatch > 0.3 && bestMatch < 0.8) {
-            isSnapping = true;
-            
-            targetItem.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-            
-            setTimeout(() => {
-                isSnapping = false;
-            }, 200);
-        }
-        
-        requestAnimationFrame(checkAndSnap);
-    }
-    
-    requestAnimationFrame(checkAndSnap);
 }
 
 // ---------- COMMENTS MODAL ----------
@@ -581,6 +585,13 @@ function createFeedItem(mediaItem) {
         profileImg.src = mediaItem.profileImage;
     }
     
+    // Check of gebruiker al geabonneerd is
+    const subscribed = isSubscribed(mediaItem.channelId);
+    if (subscribed) {
+        profileBtn.classList.add('subscribed');
+        profileBtn.querySelector('.profile-plus').textContent = '✓';
+    }
+    
     likeBtn.dataset.id = mediaItem.id;
     saveBtn.dataset.id = mediaItem.id;
     commentBtn.dataset.id = mediaItem.id;
@@ -609,14 +620,29 @@ function createFeedItem(mediaItem) {
         likeBtn.classList.add('liked');
     }
 
-    // EVENT LISTENERS
+    // PROFIEL KNOP - ABONNEREN/UITSCHRIJVEN
     profileBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        showToast(`👤 @${mediaItem.channelId}`);
-        // Hier kun je later een profielpagina toevoegen
+        
+        const channelId = mediaItem.channelId;
+        const isSubbed = isSubscribed(channelId);
+        const plusSpan = profileBtn.querySelector('.profile-plus');
+        
+        if (isSubbed) {
+            unsubscribeFromChannel(channelId);
+            profileBtn.classList.remove('subscribed');
+            plusSpan.textContent = '+';
+            showToast(`👋 Uitgeschreven van @${channelId}`);
+        } else {
+            subscribeToChannel(channelId);
+            profileBtn.classList.add('subscribed');
+            plusSpan.textContent = '✓';
+            showToast(`✅ Geabonneerd op @${channelId}`);
+        }
     });
 
+    // LIKE KNOP
     likeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -638,6 +664,7 @@ function createFeedItem(mediaItem) {
         }
     });
 
+    // SAVE KNOP
     saveBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -658,6 +685,7 @@ function createFeedItem(mediaItem) {
         }
     });
 
+    // COMMENT KNOP
     commentBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -665,6 +693,7 @@ function createFeedItem(mediaItem) {
         commentBtn.classList.add('active');
     });
 
+    // SHARE KNOP
     shareBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -675,32 +704,60 @@ function createFeedItem(mediaItem) {
     return itemDiv;
 }
 
-// ---------- SHARE MENU ----------
+// ---------- SHARE MENU MET DISCORD EN SNAPCHAT ----------
 function openShareMenu(mediaItem) {
     shareMenu.classList.add('active');
     document.body.style.overflow = 'hidden';
     
     const whatsappBtn = document.getElementById('share-whatsapp');
+    const discordBtn = document.getElementById('share-discord');
+    const snapchatBtn = document.getElementById('share-snapchat');
     const copyBtn = document.getElementById('share-copy');
     const closeBtn = shareMenu.querySelector('.share-close');
     
+    // Clone buttons om oude event listeners te verwijderen
     const newWhatsapp = whatsappBtn.cloneNode(true);
+    const newDiscord = discordBtn.cloneNode(true);
+    const newSnapchat = snapchatBtn.cloneNode(true);
     const newCopy = copyBtn.cloneNode(true);
     const newClose = closeBtn.cloneNode(true);
+    
     whatsappBtn.parentNode.replaceChild(newWhatsapp, whatsappBtn);
+    discordBtn.parentNode.replaceChild(newDiscord, discordBtn);
+    snapchatBtn.parentNode.replaceChild(newSnapchat, snapchatBtn);
     copyBtn.parentNode.replaceChild(newCopy, copyBtn);
     shareMenu.querySelector('.share-close').replaceWith(newClose);
     
+    const shareText = `📱 Check dit filmpje op Bobtop: ${mediaItem.title} door @${mediaItem.channelId}`;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?video=${mediaItem.id}`;
+    
     newWhatsapp.addEventListener('click', () => {
-        const text = `📱 Check dit filmpje op Bobtop: ${mediaItem.title} door @${mediaItem.channelId}`;
-        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        const url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
         window.open(url, '_blank');
         closeShareMenu();
         showToast('📤 Gedeeld via WhatsApp');
     });
     
+    newDiscord.addEventListener('click', () => {
+        const url = `https://discord.com/channels/@me?${encodeURIComponent(shareText + ' ' + shareUrl)}`;
+        window.open('https://discord.com/app', '_blank');
+        // Discord heeft geen direct share URL, dus kopiëren we naar klembord
+        navigator.clipboard.writeText(shareText + ' ' + shareUrl).then(() => {
+            showToast('📋 Link gekopieerd - plak in Discord');
+        });
+        closeShareMenu();
+    });
+    
+    newSnapchat.addEventListener('click', () => {
+        const url = `https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(shareUrl)}`;
+        window.open('https://www.snapchat.com/scan', '_blank');
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast('👻 Link gekopieerd - plak in Snapchat');
+        });
+        closeShareMenu();
+    });
+    
     newCopy.addEventListener('click', async () => {
-        const shareUrl = `${window.location.origin}${window.location.pathname}?video=${mediaItem.id}`;
         try {
             await navigator.clipboard.writeText(shareUrl);
             showToast('🔗 Link gekopieerd naar klembord');
