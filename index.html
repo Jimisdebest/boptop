@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ZOEKBALK - klein en wordt groter bij focus -->
+    <!-- ZOEKBALK -->
     <div class="search-container">
         <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Zoeken...">
     </div>
@@ -15,35 +15,35 @@
     <div id="feed" class="feed"></div>
     <div class="bottom-sentinel" id="sentinel"></div>
 
-    <!-- Template voor actieknoppen (rechts) - NIEUWE VOLGORDE: van onder naar boven: profielfoto, like, comments, save, share -->
+    <!-- Template voor actieknoppen (rechts) - NIEUWE VOLGORDE met JOUW ICONEN -->
     <div id="action-panel-template" style="display: none;">
         <div class="action-buttons">
-            <!-- Profielfoto (onderste knop) -->
-            <div class="action-btn profile-btn" aria-label="Profiel">
+            <!-- Profielfoto (onderste knop) - abonneren -->
+            <div class="action-btn profile-btn" aria-label="Abonneren">
                 <div class="profile-image-container">
-                    <img src="default-avatar.jpg" alt="Profielfoto" class="profile-image">
+                    <img src="" alt="Profielfoto" class="profile-image" id="profile-image-template">
                     <div class="profile-plus">+</div>
                 </div>
-                <span class="action-count profile-count"></span>
+                <span class="action-count profile-count">Abonneer</span>
             </div>
-            <!-- Like -->
+            <!-- Like met hartje.png -->
             <div class="action-btn like-btn" aria-label="Like">
-                <span class="emoji-icon">❤️</span>
+                <img src="hartje.png" alt="Like" class="action-icon">
                 <span class="action-count like-count">0</span>
             </div>
-            <!-- Comments -->
+            <!-- Comments met commentsicoon.png -->
             <div class="action-btn comment-btn" aria-label="Reacties">
-                <span class="emoji-icon">💬</span>
+                <img src="commentsicoon.png" alt="Reacties" class="action-icon">
                 <span class="action-count comment-count">0</span>
             </div>
-            <!-- Save -->
+            <!-- Save met opslaanicoon.png -->
             <div class="action-btn save-btn" aria-label="Opslaan">
-                <span class="emoji-icon">💾</span>
+                <img src="opslaanicoon.png" alt="Opslaan" class="action-icon">
                 <span class="action-count save-count">0</span>
             </div>
-            <!-- Share (bovenste knop) -->
+            <!-- Share met deelicoon.png (bovenste knop) -->
             <div class="action-btn share-btn" aria-label="Delen">
-                <span class="emoji-icon">📤</span>
+                <img src="deelicoon.png" alt="Delen" class="action-icon">
                 <span class="action-count share-count">Deel</span>
             </div>
         </div>
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <!-- Deel menu -->
+    <!-- Deel menu met Discord en Snapchat -->
     <div id="share-menu" class="share-menu">
         <div class="share-menu-content">
             <h3>📤 Delen via</h3>
@@ -73,6 +73,18 @@
                         <span class="emoji-large">💬</span>
                     </div>
                     <span>WhatsApp</span>
+                </div>
+                <div class="share-option" id="share-discord">
+                    <div class="share-icon discord-icon">
+                        <span class="emoji-large">🎮</span>
+                    </div>
+                    <span>Discord</span>
+                </div>
+                <div class="share-option" id="share-snapchat">
+                    <div class="share-icon snapchat-icon">
+                        <span class="emoji-large">👻</span>
+                    </div>
+                    <span>Snapchat</span>
                 </div>
                 <div class="share-option" id="share-copy">
                     <div class="share-icon copy-icon">
