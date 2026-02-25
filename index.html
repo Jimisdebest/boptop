@@ -7,90 +7,85 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Zoekbalk -->
-        <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Zoek naar videos, kanalen...">
-
-        <!-- Profielfoto rechts (wordt getoond via JS) -->
-        <div class="channel-profile" id="currentChannelProfile" style="display: none;">
-            <img src="" alt="Channel profile" id="profileImage">
-        </div>
-
-        <!-- Feed -->
-        <div id="feed" class="feed"></div>
-        <div class="bottom-sentinel" id="sentinel"></div>
-
-        <!-- Template voor actieknoppen -->
-        <div id="action-panel-template" style="display: none;">
-            <div class="action-buttons">
-                <div class="action-btn like-btn" aria-label="Like">
-                    <span class="emoji-icon">❤️</span>
-                    <span class="action-count like-count">0</span>
-                </div>
-                <div class="action-btn dislike-btn" aria-label="Dislike">
-                    <span class="emoji-icon">👎</span>
-                    <span class="action-count dislike-count">0</span>
-                </div>
-                <div class="action-btn save-btn" aria-label="Opslaan">
-                    <span class="emoji-icon">💾</span>
-                    <span class="action-count save-count">0</span>
-                </div>
-                <div class="action-btn comment-btn" aria-label="Reacties">
-                    <span class="emoji-icon">💬</span>
-                    <span class="action-count comment-count">0</span>
-                </div>
-                <div class="action-btn share-btn" aria-label="Delen">
-                    <span class="emoji-icon">📤</span>
-                    <span class="action-count share-count">Deel</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- COMMENTS MODAL -->
-        <div id="comments-modal" class="comments-modal">
-            <div class="comments-content">
-                <div class="comments-header">
-                    <h2>💬 Reacties</h2>
-                    <button class="close-comments">&times;</button>
-                </div>
-                <div class="comments-list" id="comments-list"></div>
-                <div class="comments-footer">
-                    <button class="close-comments-btn">Sluiten</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Deel menu -->
-        <div id="share-menu" class="share-menu">
-            <div class="share-menu-content">
-                <h3>📤 Delen via</h3>
-                <div class="share-options">
-                    <div class="share-option" id="share-whatsapp">
-                        <div class="share-icon whatsapp-icon">
-                            <span class="emoji-large">💬</span>
-                        </div>
-                        <span>WhatsApp</span>
-                    </div>
-                    <div class="share-option" id="share-discord">
-                        <div class="share-icon discord-icon">
-                            <span class="emoji-large">🎮</span>
-                        </div>
-                        <span>Discord</span>
-                    </div>
-                    <div class="share-option" id="share-copy">
-                        <div class="share-icon copy-icon">
-                            <span class="emoji-large">🔗</span>
-                        </div>
-                        <span>Link kopiëren</span>
-                    </div>
-                </div>
-                <button class="share-close">Annuleren</button>
-            </div>
-        </div>
-
-        <div id="toast" class="toast">✅ Opgeslagen!</div>
+    <!-- ZOEKBALK - klein en wordt groter bij focus -->
+    <div class="search-container">
+        <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Zoeken...">
     </div>
 
+    <div id="feed" class="feed"></div>
+    <div class="bottom-sentinel" id="sentinel"></div>
+
+    <!-- Template voor actieknoppen (rechts) - NIEUWE VOLGORDE: van onder naar boven: profielfoto, like, comments, save, share -->
+    <div id="action-panel-template" style="display: none;">
+        <div class="action-buttons">
+            <!-- Profielfoto (onderste knop) -->
+            <div class="action-btn profile-btn" aria-label="Profiel">
+                <div class="profile-image-container">
+                    <img src="default-avatar.jpg" alt="Profielfoto" class="profile-image">
+                    <div class="profile-plus">+</div>
+                </div>
+                <span class="action-count profile-count"></span>
+            </div>
+            <!-- Like -->
+            <div class="action-btn like-btn" aria-label="Like">
+                <span class="emoji-icon">❤️</span>
+                <span class="action-count like-count">0</span>
+            </div>
+            <!-- Comments -->
+            <div class="action-btn comment-btn" aria-label="Reacties">
+                <span class="emoji-icon">💬</span>
+                <span class="action-count comment-count">0</span>
+            </div>
+            <!-- Save -->
+            <div class="action-btn save-btn" aria-label="Opslaan">
+                <span class="emoji-icon">💾</span>
+                <span class="action-count save-count">0</span>
+            </div>
+            <!-- Share (bovenste knop) -->
+            <div class="action-btn share-btn" aria-label="Delen">
+                <span class="emoji-icon">📤</span>
+                <span class="action-count share-count">Deel</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMENTS MODAL -->
+    <div id="comments-modal" class="comments-modal">
+        <div class="comments-content">
+            <div class="comments-header">
+                <h2>💬 Reacties</h2>
+                <button class="close-comments">&times;</button>
+            </div>
+            <div class="comments-list" id="comments-list"></div>
+            <div class="comments-footer">
+                <button class="close-comments-btn">Sluiten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deel menu -->
+    <div id="share-menu" class="share-menu">
+        <div class="share-menu-content">
+            <h3>📤 Delen via</h3>
+            <div class="share-options">
+                <div class="share-option" id="share-whatsapp">
+                    <div class="share-icon whatsapp-icon">
+                        <span class="emoji-large">💬</span>
+                    </div>
+                    <span>WhatsApp</span>
+                </div>
+                <div class="share-option" id="share-copy">
+                    <div class="share-icon copy-icon">
+                        <span class="emoji-large">🔗</span>
+                    </div>
+                    <span>Link kopiëren</span>
+                </div>
+            </div>
+            <button class="share-close">Annuleren</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">✅ Opgeslagen!</div>
     <script src="script.js"></script>
 </body>
 </html>
