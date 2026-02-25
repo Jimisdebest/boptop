@@ -1,4 +1,4 @@
-// ---------- BOBTOP 8.0 - MET AUTOPLAY EN ZOEKSUGGESTIES ----------
+// ---------- BOBTOP 6.0 - MET SWIPE, PROFIEL FOTO, GEEN DISLIKES ----------
 const videoDatabase = [
     {
         id: 1,
@@ -11,7 +11,7 @@ const videoDatabase = [
         contentType: 'Real',
         weight: 1,
         baseLikes: 12400,
-        baseDislikes: 320
+        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=cleangirl'
     },
     {
         id: 2,
@@ -19,28 +19,15 @@ const videoDatabase = [
         url: 'HEMAregenboogrookworst.mp4',
         channel: 'HEMA',
         channelId: 'hema',
-        title: 'HEMA Regenboogrookworst',
+        title: 'HEMA',
         description: 'Koop nu HEMA regenboogrookworst!',
         contentType: 'Real',
-        weight: 0.8,
+        weight: 1,
         baseLikes: 8900,
-        baseDislikes: 450
+        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=hema'
     },
     {
         id: 3,
-        type: 'video',
-        url: 'HEMA-koop-deze-mevrouw-bij-ons.mp4',
-        channel: 'HEMA',
-        channelId: 'hema',
-        title: 'Koop deze mevrouw bij ons!',
-        description: 'Ze ligt nu in de winkel: henatje.',
-        contentType: 'Real',
-        weight: 0.8,
-        baseLikes: 8900,
-        baseDislikes: 450
-    },
-    {
-        id: 4,
         type: 'video',
         url: 'MINECRAFTMODS-hoe-je-een-mod-installeerd.mp4',
         channel: 'MINECRAFTMODS',
@@ -50,10 +37,10 @@ const videoDatabase = [
         contentType: 'AI',
         weight: 1,
         baseLikes: 15600,
-        baseDislikes: 210
+        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=minecraft'
     },
     {
-        id: 5,
+        id: 4,
         type: 'video',
         url: 'FUNNYAI-ik-ga-je-pakken.mp4',
         channel: 'FunnyAI',
@@ -61,79 +48,11 @@ const videoDatabase = [
         title: 'IK GA JE PAKKEN! 👻',
         description: 'Hilarische AI video - niet alleen kijken voor het slapen gaan',
         contentType: 'AI',
-        weight: 1.0,
+        weight: 1.8,
         baseLikes: 34200,
-        baseDislikes: 89
-    },
-    {
-        id: 6,
-        type: 'photo',
-        url: 'DRIPSKIPPER-zie-mijn-drip-pak.png',
-        channel: 'DripSkipper',
-        channelId: 'dripskipper',
-        title: 'Zie mijn drippak.',
-        description: 'Ik ben #DripSkipper en ik heb een drippak.',
-        contentType: 'Real',
-        weight: 1.0,
-        baseLikes: 350,
-        baseDislikes: 10
-    },
-    {
-        id: 7,
-        type: 'video',
-        url: 'DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4',
-        channel: 'DripSkipper',
-        channelId: 'dripskipper',
-        title: 'Zie mijn nieuwe drippak.',
-        description: 'Ik ben #DripSkipper en ik heb heel veel drippakken.',
-        contentType: 'Real',
-        weight: 1.0,
-        baseLikes: 350,
-        baseDislikes: 10
-    },
-    {
-        id: 8,
-        type: 'video',
-        url: 'NATUREVIDEOS-see-the-see.mp4',
-        channel: 'Naturevideo´s',
-        channelId: 'naturevideos',
-        title: 'See the see',
-        description: 'De zee in india, zo prachtig!',
-        contentType: 'AI',
-        weight: 1.0,
-        baseLikes: 300,
-        baseDislikes: 5
-    },
-    {
-        id: 9,
-        type: 'video',
-        url: 'NATUREVIDEOS-see-the-strand.mp4',
-        channel: 'Naturevideo´s',
-        channelId: 'naturevideos',
-        title: 'See the strand',
-        description: 'Het strand in afrika, het was er koud!',
-        contentType: 'AI',
-        weight: 1.0,
-        baseLikes: 300,
-        baseDislikes: 5
-    },
-    {
-        id: 5,
-        type: 'video',
-        url: 'FUNNYAI-ik-ben-een-paard-en-ik-ga-pindakaaskoekjes-eten.mp4',
-        channel: 'FunnyAI',
-        channelId: 'funnyai',
-        title: 'Ik ben een paard en ik ga pindakaas',
-        description: 'Hilarische AI video - niet alleen kijken voor het slapen gaan',
-        contentType: 'AI',
-        weight: 1.0,
-        baseLikes: 34200,
-        baseDislikes: 89
-    },
-    
+        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=funnyai'
+    }
 ];
-// Fallback video
-const FALLBACK_VIDEO_URL = 'https://jimisdebest.github.io/musical/HetBloemenlandDansvideo.mp4';
 
 // ---------- REACTIES ----------
 let commentsDatabase = [];
@@ -141,22 +60,22 @@ let commentsDatabase = [];
 async function loadComments() {
     try {
         const response = await fetch('reacties.txt');
-        if (!response.ok) throw new Error('Bestand niet gevonden');
         const text = await response.text();
         commentsDatabase = text.split('\n')
             .map(line => line.trim())
             .filter(line => line.length > 0);
         console.log(`📝 ${commentsDatabase.length} reacties geladen`);
     } catch (error) {
+        console.warn('⚠️ reacties.txt niet gevonden, gebruik standaard reacties');
         commentsDatabase = [
             "Dit is echt top gemaakt! 🔥",
             "Eerste! 🙋‍♂️",
+            "Hoe lang ben je hiermee bezig geweest?",
             "😂😂😂 geweldig",
-            "IK GA JE PAKKEN! 👻",
-            "FunnyAI is de beste!",
-            "Echt AI? Niet te geloven",
-            "Hahaha geniaal dit",
-            "Like voor deel 2!"
+            "Eindelijk normaal commentaar",
+            "Like voor deel 2!",
+            "AI wordt steeds beter zeg",
+            "Dit verdient meer views"
         ];
     }
 }
@@ -179,11 +98,11 @@ function getRandomComments() {
 }
 
 function generateUsername() {
-    const prefixes = ['@bob', '@ai', '@user', '@fan', '@funnyai', '@kijker'];
-    const suffixes = ['123', 'fan', 'nl', 'xd', '👻', 'lover'];
-    return prefixes[Math.floor(Math.random() * prefixes.length)] + 
-           suffixes[Math.floor(Math.random() * suffixes.length)] + 
-           Math.floor(Math.random() * 100);
+    const prefixes = ['@bob', '@ai', '@video', '@tiktok', '@user', '@filmpje', '@bobtop', '@creative'];
+    const suffixes = ['123', 'fan', 'lover', 'nl', 'official', 'xd', '4life'];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    return prefix + suffix + Math.floor(Math.random() * 100);
 }
 
 function getRandomTime() {
@@ -195,30 +114,48 @@ function getRandomTime() {
 }
 
 // ---------- STORAGE ----------
-const LIKE_DISLIKE_KEY = 'bobtop_preferences';
-let lastPlayedVideoId = null;
-let videoPlayCount = new Map();
-const videoCommentsCache = new Map();
-let currentChannelVideos = [];
-let isChannelView = false;
-let searchTimeout = null;
-let currentlyPlayingVideo = null;
+const STORAGE_KEY = 'bobtop_saved_items';
+const LIKE_KEY = 'bobtop_likes';
 
-function getPreferences() {
-    try { return JSON.parse(localStorage.getItem(LIKE_DISLIKE_KEY)) || {}; } catch { return {}; }
+function getSavedItems() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
 }
 
-function setPreference(itemId, type) {
-    const prefs = getPreferences();
-    if (type === null) delete prefs[itemId];
-    else prefs[itemId] = type;
-    localStorage.setItem(LIKE_DISLIKE_KEY, JSON.stringify(prefs));
+function saveItemLocally(itemId) {
+    let saved = getSavedItems();
+    if (!saved.includes(itemId)) {
+        saved.push(itemId);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    }
+    return saved;
 }
 
-function getPreference(itemId) {
-    return getPreferences()[itemId] || null;
+function unsaveItemLocally(itemId) {
+    let saved = getSavedItems().filter(id => id !== itemId);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    return saved;
 }
 
+function isItemSaved(itemId) {
+    return getSavedItems().includes(itemId);
+}
+
+function getLikes() {
+    try { return JSON.parse(localStorage.getItem(LIKE_KEY)) || {}; } catch { return {}; }
+}
+
+function setLike(itemId, liked) {
+    const likes = getLikes();
+    if (liked) likes[itemId] = true;
+    else delete likes[itemId];
+    localStorage.setItem(LIKE_KEY, JSON.stringify(likes));
+}
+
+function isItemLiked(itemId) {
+    return getLikes()[itemId] || false;
+}
+
+// Genereer random likes
 function getRandomLikeCount(item, userLiked) {
     const base = item.baseLikes || 10000;
     const variation = Math.floor(Math.random() * 5000) - 2500;
@@ -227,13 +164,107 @@ function getRandomLikeCount(item, userLiked) {
     return count.toLocaleString();
 }
 
-function getRandomDislikeCount(item, userDisliked) {
-    const base = item.baseDislikes || 500;
-    const variation = Math.floor(Math.random() * 200) - 100;
-    let count = Math.max(0, base + variation);
-    if (userDisliked) count += 1;
-    return count.toLocaleString();
+// ---------- STATE ----------
+let currentFilterChannel = null;
+let lastPlayedVideoId = null;
+let videoPlayCount = new Map();
+const videoCommentsCache = new Map();
+
+// ---------- FILTER OP KANAAL (voor swipe naar rechts) ----------
+function filterByChannel(channelId) {
+    if (currentFilterChannel === channelId) return; // Al bezig
+    
+    currentFilterChannel = channelId;
+    feedEl.innerHTML = '';
+    currentRenderedIds.clear();
+    lastPlayedVideoId = null;
+    
+    showToast(`📺 Alleen @${channelId}`);
+    
+    for (let i = 0; i < 3; i++) {
+        addItemToFeed();
+    }
 }
+
+// ---------- RANDOM FEED (voor swipe omlaag) ----------
+function showRandomFeed() {
+    if (currentFilterChannel === null) return; // Al random
+    
+    currentFilterChannel = null;
+    feedEl.innerHTML = '';
+    currentRenderedIds.clear();
+    lastPlayedVideoId = null;
+    
+    showToast(`🎲 Willekeurige video's`);
+    
+    for (let i = 0; i < 3; i++) {
+        addItemToFeed();
+    }
+}
+
+// ---------- GEWOGEN RANDOM ----------
+function getWeightedRandomItem() {
+    let available = currentFilterChannel 
+        ? videoDatabase.filter(item => item.channelId === currentFilterChannel)
+        : [...videoDatabase];
+    
+    if (available.length === 0) {
+        currentFilterChannel = null;
+        available = [...videoDatabase];
+    }
+    
+    if (available.length === 1) {
+        return available[0];
+    }
+    
+    const likes = getLikes();
+    const playCounts = videoPlayCount;
+    
+    let candidates = available.map(item => {
+        let baseWeight = item.weight || 1;
+        
+        if (likes[item.id]) baseWeight *= 2.2;
+        
+        if (item.id === lastPlayedVideoId) {
+            baseWeight *= 0.1;
+        }
+        
+        const playCount = playCounts.get(item.id) || 0;
+        if (playCount > 2) {
+            baseWeight *= 0.7;
+        }
+        
+        return { item, weight: Math.max(0.01, baseWeight) };
+    });
+    
+    const total = candidates.reduce((sum, c) => sum + c.weight, 0);
+    let rand = Math.random() * total;
+    
+    for (let c of candidates) {
+        if (rand < c.weight) {
+            const currentCount = videoPlayCount.get(c.item.id) || 0;
+            videoPlayCount.set(c.item.id, currentCount + 1);
+            lastPlayedVideoId = c.item.id;
+            return c.item;
+        }
+        rand -= c.weight;
+    }
+    
+    const fallback = available[0];
+    videoPlayCount.set(fallback.id, (videoPlayCount.get(fallback.id) || 0) + 1);
+    lastPlayedVideoId = fallback.id;
+    return fallback;
+}
+
+// ---------- FEED & UI ----------
+let loadedItemCount = 0;
+let currentRenderedIds = new Set();
+const feedEl = document.getElementById('feed');
+const sentinel = document.getElementById('sentinel');
+const actionPanelTemplate = document.getElementById('action-panel-template').innerHTML;
+const shareMenu = document.getElementById('share-menu');
+const commentsModal = document.getElementById('comments-modal');
+const searchInput = document.getElementById('searchInput');
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
@@ -242,465 +273,195 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 2300);
 }
 
-// ---------- GEWOGEN RANDOM ----------
-function getWeightedRandomItem() {
-    let available = [...videoDatabase];
-    
-    if (available.length === 1) return available[0];
-    
-    const prefs = getPreferences();
-    let candidates = available.map(item => {
-        let weight = item.weight || 1;
-        const pref = prefs[item.id];
-        if (pref === 'dislike') weight = 0.02;
-        else if (pref === 'like') weight *= 2.2;
-        if (item.id === lastPlayedVideoId) weight *= 0.3;
-        
-        const playCount = videoPlayCount.get(item.id) || 0;
-        if (playCount > 3) weight *= 0.7;
-        
-        return { item, weight: Math.max(0.01, weight) };
-    });
-    
-    const total = candidates.reduce((sum, c) => sum + c.weight, 0);
-    let rand = Math.random() * total;
-    
-    for (let c of candidates) {
-        if (rand < c.weight) {
-            videoPlayCount.set(c.item.id, (videoPlayCount.get(c.item.id) || 0) + 1);
-            lastPlayedVideoId = c.item.id;
-            return c.item;
-        }
-        rand -= c.weight;
+// ---------- ZOEKBALK ----------
+searchInput.addEventListener('focus', () => {
+    // Wordt groter via CSS
+});
+
+searchInput.addEventListener('blur', () => {
+    if (searchInput.value.length === 0) {
+        // Blijft klein als er niets is ingevuld
     }
-    return available[0];
+});
+
+searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    if (query.length > 2) {
+        // Hier kun je zoekfunctionaliteit toevoegen
+        console.log('Zoeken naar:', query);
+    }
+});
+
+// ---------- SWIPE DETECTIE ----------
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+let touchStartTime = 0;
+const MIN_SWIPE_DISTANCE = 50;
+const MAX_SWIPE_TIME = 500;
+
+document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+    touchStartTime = Date.now();
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    handleSwipe();
+}, { passive: true });
+
+function handleSwipe() {
+    const swipeTime = Date.now() - touchStartTime;
+    if (swipeTime > MAX_SWIPE_TIME) return;
+    
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    
+    // Check of het een horizontale swipe is (meer X dan Y beweging)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > MIN_SWIPE_DISTANCE) {
+        // Swipe naar RECHTS -> filter op huidige kanaal
+        if (deltaX > 0) {
+            const currentItem = getCurrentVideoItem();
+            if (currentItem && currentItem.dataset.channelId) {
+                filterByChannel(currentItem.dataset.channelId);
+            }
+        }
+    }
+    // Check of het een verticale swipe is (meer Y dan X beweging)
+    else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > MIN_SWIPE_DISTANCE) {
+        // Swipe naar BENEDEN -> random feed
+        if (deltaY > 0) {
+            showRandomFeed();
+        }
+    }
 }
 
-// ---------- VIDEO SETUP - VERBETERD AUTOPLAY ----------
+// Huidige video item ophalen (meest zichtbare)
+function getCurrentVideoItem() {
+    const feedItems = document.querySelectorAll('.feed-item');
+    if (feedItems.length === 0) return null;
+    
+    const viewportHeight = window.innerHeight;
+    let bestItem = null;
+    let bestVisibility = 0;
+    
+    feedItems.forEach(item => {
+        const rect = item.getBoundingClientRect();
+        const visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
+        const visibilityRatio = visibleHeight / viewportHeight;
+        
+        if (visibilityRatio > bestVisibility) {
+            bestVisibility = visibilityRatio;
+            bestItem = item;
+        }
+    });
+    
+    return bestItem;
+}
+
+// ---------- VIDEO SETUP (AUTOPLAY + LOOP) ----------
 function setupVideo(video, itemDiv, mediaItem) {
     video.loop = true;
     video.muted = false;
     video.playsInline = true;
     video.preload = 'auto';
     
-    video.onerror = () => {
-        console.log(`Video ${video.src} niet gevonden, gebruik fallback`);
-        video.src = FALLBACK_VIDEO_URL;
-    };
-    
-    // Forceer autoplay door eerst te proberen met muted
-    const playVideo = () => {
-        video.muted = false;
-        video.play().catch(e => {
-            console.log('Autoplay geblokkeerd, probeer met mute');
-            video.muted = true;
-            video.play().catch(err => {
-                console.log('Video kan niet afspelen:', err);
-            });
-        });
-    };
+    let isPlaying = false;
     
     const videoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            const isVisible = entry.isIntersecting && entry.intersectionRatio > 0.5;
+            const ratio = entry.intersectionRatio;
+            const isFullyVisible = ratio > 0.7;
             
-            if (isVisible) {
-                // Pauzeer alle andere videos
-                document.querySelectorAll('.feed-item video').forEach(otherVideo => {
-                    if (otherVideo !== video) {
-                        otherVideo.pause();
-                        otherVideo.muted = true;
-                    }
-                });
-                
-                // Speel deze video af
-                currentlyPlayingVideo = video;
-                playVideo();
-                updateProfilePicture(mediaItem.channelId);
-                
-                console.log(`▶️ Video ${mediaItem.id} speelt af`);
+            if (isFullyVisible) {
+                if (!isPlaying) {
+                    video.play()
+                        .then(() => {
+                            isPlaying = true;
+                        })
+                        .catch(e => {
+                            console.log('🔇 Autoplay geblokkeerd');
+                            const playOnInteraction = () => {
+                                video.play();
+                                document.removeEventListener('click', playOnInteraction);
+                                document.removeEventListener('touchstart', playOnInteraction);
+                            };
+                            document.addEventListener('click', playOnInteraction, { once: true });
+                            document.addEventListener('touchstart', playOnInteraction, { once: true });
+                        });
+                }
             } else {
-                video.pause();
-                video.muted = true;
-                if (currentlyPlayingVideo === video) {
-                    currentlyPlayingVideo = null;
+                if (isPlaying) {
+                    video.pause();
+                    isPlaying = false;
                 }
             }
         });
-    }, { threshold: 0.5 });
+    }, { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1] });
     
     videoObserver.observe(video);
-    itemDiv._videoObserver = videoObserver;
     
-    // Start met mute aan voor autoplay
-    video.muted = true;
-    
-    // Probeer direct te spelen als het eerste item
-    setTimeout(() => {
-        if (itemDiv === document.querySelector('.feed-item:first-child')) {
-            const rect = itemDiv.getBoundingClientRect();
-            if (rect.top >= 0 && rect.top < window.innerHeight) {
-                playVideo();
-            }
-        }
-    }, 100);
-}
-
-// ---------- PROFIELFOTO ----------
-function updateProfilePicture(channelId) {
-    const profileDiv = document.getElementById('currentChannelProfile');
-    const profileImg = document.getElementById('profileImage');
-    
-    profileImg.src = `${channelId.toUpperCase()}.png`;
-    profileImg.onerror = () => {
-        profileImg.src = 'https://via.placeholder.com/60/333/fff?text=' + channelId[0].toUpperCase();
+    video.onerror = () => {
+        console.warn(`❌ Video ${video.src} niet geladen`);
+        itemDiv.remove();
+        maybeLoadMore();
     };
     
-    profileDiv.style.display = 'block';
-    profileDiv.dataset.channelId = channelId;
-}
-
-// ---------- ZOEKSUGGESTIES ----------
-function createSuggestionsContainer() {
-    const container = document.createElement('div');
-    container.id = 'searchSuggestions';
-    container.className = 'search-suggestions';
-    document.querySelector('.app-container').appendChild(container);
-    return container;
-}
-
-function updateSuggestions(query) {
-    const suggestionsContainer = document.getElementById('searchSuggestions') || createSuggestionsContainer();
-    
-    if (!query || query.length < 2) {
-        suggestionsContainer.classList.remove('active');
-        return;
-    }
-    
-    const queryLower = query.toLowerCase();
-    
-    // Zoek naar matches
-    const matches = videoDatabase.filter(video => 
-        video.title.toLowerCase().includes(queryLower) ||
-        video.description.toLowerCase().includes(queryLower) ||
-        video.channelId.toLowerCase().includes(queryLower) ||
-        video.channel.toLowerCase().includes(queryLower)
-    ).slice(0, 8); // Max 8 suggesties
-    
-    if (matches.length === 0) {
-        suggestionsContainer.innerHTML = '<div class="no-suggestions">Geen resultaten gevonden</div>';
-        suggestionsContainer.classList.add('active');
-        return;
-    }
-    
-    suggestionsContainer.innerHTML = matches.map(video => `
-        <div class="suggestion-item" data-video-id="${video.id}">
-            <div class="suggestion-emoji">${video.type === 'video' ? '🎬' : '📷'}</div>
-            <div class="suggestion-info">
-                <div class="suggestion-title">${video.title}</div>
-                <div class="suggestion-channel">
-                    <span>@${video.channelId}</span>
-                    <span class="suggestion-badge">${video.contentType}</span>
-                    <span class="suggestion-type">${video.type.toUpperCase()}</span>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    
-    // Voeg click handlers toe
-    suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const videoId = parseInt(item.dataset.videoId);
-            const video = videoDatabase.find(v => v.id === videoId);
-            if (video) {
-                // Scroll naar deze video
-                const existingItem = document.querySelector(`.feed-item[data-item-id="${videoId}"]`);
-                if (existingItem) {
-                    existingItem.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    // Voeg video toe aan feed
-                    isChannelView = true;
-                    currentChannelVideos = [video];
-                    const feed = document.getElementById('feed');
-                    feed.innerHTML = '';
-                    currentRenderedIds.clear();
-                    feed.appendChild(createFeedItem(video));
-                    currentRenderedIds.add(video.id);
-                }
-                
-                // Update profielfoto
-                updateProfilePicture(video.channelId);
-                
-                // Verberg suggesties
-                suggestionsContainer.classList.remove('active');
-                document.getElementById('searchInput').value = video.title;
-            }
-        });
-    });
-    
-    suggestionsContainer.classList.add('active');
-}
-
-// ---------- KANAAL WEERGAVE ----------
-function showChannelVideos(channelId) {
-    const channelVideos = videoDatabase.filter(v => v.channelId === channelId);
-    
-    if (channelVideos.length === 0) return;
-    
-    isChannelView = true;
-    currentChannelVideos = channelVideos;
-    
-    const feed = document.getElementById('feed');
-    feed.innerHTML = '';
-    currentRenderedIds.clear();
-    
-    channelVideos.forEach(video => {
-        const feedItem = createFeedItem(video);
-        feed.appendChild(feedItem);
-        currentRenderedIds.add(video.id);
-    });
-    
-    showToast(`📺 Alle videos van @${channelId}`);
-    
-    // Scroll naar eerste video
-    setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
-}
-
-// ---------- TERUG NAAR RANDOM FEED ----------
-function showRandomFeed() {
-    if (!isChannelView) return;
-    
-    isChannelView = false;
-    currentChannelVideos = [];
-    
-    const feed = document.getElementById('feed');
-    feed.innerHTML = '';
-    currentRenderedIds.clear();
-    
-    for (let i = 0; i < 3; i++) {
-        addItemToFeed();
-    }
-    
-    showToast('🎲 Willekeurige videos');
-}
-
-// ---------- ZOEKFUNCTIE ----------
-function setupSearch() {
-    const searchInput = document.getElementById('searchInput');
-    const suggestionsContainer = createSuggestionsContainer();
-    
-    searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.trim();
-        
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            updateSuggestions(query);
-        }, 200);
-    });
-    
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            suggestionsContainer.classList.remove('active');
-            searchInput.blur();
-        } else if (e.key === 'Enter') {
-            const query = searchInput.value.trim();
-            if (query.length > 0) {
-                suggestionsContainer.classList.remove('active');
-                performSearch(query);
-            }
-        }
-    });
-    
-    // Klik buiten sluit suggesties
-    document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-            suggestionsContainer.classList.remove('active');
-        }
-    });
-}
-
-function performSearch(query) {
-    const queryLower = query.toLowerCase();
-    
-    const results = videoDatabase.filter(video => 
-        video.title.toLowerCase().includes(queryLower) ||
-        video.description.toLowerCase().includes(queryLower) ||
-        video.channelId.toLowerCase().includes(queryLower) ||
-        video.channel.toLowerCase().includes(queryLower)
-    );
-    
-    if (results.length > 0) {
-        isChannelView = true;
-        currentChannelVideos = results;
-        
-        const feed = document.getElementById('feed');
-        feed.innerHTML = '';
-        currentRenderedIds.clear();
-        
-        results.forEach(video => {
-            const feedItem = createFeedItem(video);
-            feed.appendChild(feedItem);
-            currentRenderedIds.add(video.id);
-        });
-        
-        showToast(`🔍 ${results.length} resultaten`);
-        
-        // Scroll naar eerste resultaat
-        setTimeout(() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 100);
-    } else {
-        showToast('❌ Geen resultaten gevonden');
-    }
-}
-
-// ---------- FEED ----------
-let loadedItemCount = 0;
-let currentRenderedIds = new Set();
-const feedEl = document.getElementById('feed');
-const sentinel = document.getElementById('sentinel');
-const actionPanelTemplate = document.getElementById('action-panel-template').innerHTML;
-const shareMenu = document.getElementById('share-menu');
-const commentsModal = document.getElementById('comments-modal');
-let currentShareItemId = null;
-
-// ---------- FEED ITEM CREATIE ----------
-function createFeedItem(mediaItem) {
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'feed-item';
-    itemDiv.dataset.itemId = mediaItem.id;
+    itemDiv._videoObserver = videoObserver;
     itemDiv.dataset.channelId = mediaItem.channelId;
+}
 
-    const mediaContainer = document.createElement('div');
-    mediaContainer.className = 'media-container';
-
-    let mediaEl;
-    if (mediaItem.type === 'video') {
-        mediaEl = document.createElement('video');
-        mediaEl.src = mediaItem.url;
-        setupVideo(mediaEl, itemDiv, mediaItem);
-    } else {
-        mediaEl = document.createElement('img');
-        mediaEl.src = mediaItem.url;
-        mediaEl.alt = mediaItem.title || 'AI afbeelding';
-        mediaEl.loading = 'lazy';
+// ---------- SCROLL SNAP ----------
+function setupScrollSnap() {
+    let isSnapping = false;
+    
+    function checkAndSnap() {
+        if (isSnapping) {
+            requestAnimationFrame(checkAndSnap);
+            return;
+        }
+        
+        const feedItems = document.querySelectorAll('.feed-item');
+        if (feedItems.length === 0) {
+            requestAnimationFrame(checkAndSnap);
+            return;
+        }
+        
+        const viewportHeight = window.innerHeight;
+        let targetItem = null;
+        let bestMatch = 0;
+        
+        feedItems.forEach(item => {
+            const rect = item.getBoundingClientRect();
+            const visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
+            const visibleRatio = visibleHeight / viewportHeight;
+            
+            if (visibleRatio > bestMatch) {
+                bestMatch = visibleRatio;
+                targetItem = item;
+            }
+        });
+        
+        if (targetItem && bestMatch > 0.3 && bestMatch < 0.8) {
+            isSnapping = true;
+            
+            targetItem.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            
+            setTimeout(() => {
+                isSnapping = false;
+            }, 200);
+        }
+        
+        requestAnimationFrame(checkAndSnap);
     }
-
-    mediaContainer.appendChild(mediaEl);
-    itemDiv.appendChild(mediaContainer);
-
-    const infoDiv = document.createElement('div');
-    infoDiv.className = 'item-info';
-    infoDiv.innerHTML = `
-        <div class="channel-name">
-            <a href="#" class="channel-link" data-channel-id="${mediaItem.channelId}">
-                @${mediaItem.channelId}
-            </a>
-            <span class="content-badge">${mediaItem.contentType}</span>
-        </div>
-        <div class="title-description">
-            <strong>${mediaItem.title}</strong> · ${mediaItem.description}
-        </div>
-    `;
-    itemDiv.appendChild(infoDiv);
-
-    infoDiv.querySelector('.channel-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        showChannelVideos(mediaItem.channelId);
-    });
-
-    const actionsDiv = document.createElement('div');
-    actionsDiv.innerHTML = actionPanelTemplate;
-    const actionButtons = actionsDiv.firstElementChild.cloneNode(true);
     
-    const likeBtn = actionButtons.querySelector('.like-btn');
-    const dislikeBtn = actionButtons.querySelector('.dislike-btn');
-    const saveBtn = actionButtons.querySelector('.save-btn');
-    const commentBtn = actionButtons.querySelector('.comment-btn');
-    const shareBtn = actionButtons.querySelector('.share-btn');
-    
-    likeBtn.dataset.id = mediaItem.id;
-    dislikeBtn.dataset.id = mediaItem.id;
-    saveBtn.dataset.id = mediaItem.id;
-    commentBtn.dataset.id = mediaItem.id;
-    shareBtn.dataset.id = mediaItem.id;
-
-    const pref = getPreference(mediaItem.id);
-    
-    likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(mediaItem, pref === 'like');
-    dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(mediaItem, pref === 'dislike');
-    commentBtn.querySelector('.comment-count').textContent = Math.floor(Math.random() * 45) + 1;
-    saveBtn.querySelector('.save-count').textContent = '0';
-    
-    if (pref === 'like') likeBtn.classList.add('liked');
-    if (pref === 'dislike') dislikeBtn.classList.add('disliked');
-
-    likeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const id = Number(likeBtn.dataset.id);
-        const item = videoDatabase.find(v => v.id === id);
-        const current = getPreference(id);
-        
-        if (current === 'like') {
-            setPreference(id, null);
-            likeBtn.classList.remove('liked');
-            likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(item, false);
-            showToast('❤️ Like verwijderd');
-        } else {
-            setPreference(id, 'like');
-            likeBtn.classList.add('liked');
-            likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(item, true);
-            if (current === 'dislike') {
-                dislikeBtn.classList.remove('disliked');
-                dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(item, false);
-            }
-            showToast('❤️ Video geliked!');
-        }
-    });
-
-    dislikeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const id = Number(dislikeBtn.dataset.id);
-        const item = videoDatabase.find(v => v.id === id);
-        const current = getPreference(id);
-        
-        if (current === 'dislike') {
-            setPreference(id, null);
-            dislikeBtn.classList.remove('disliked');
-            dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(item, false);
-            showToast('👎 Dislike verwijderd');
-        } else {
-            setPreference(id, 'dislike');
-            dislikeBtn.classList.add('disliked');
-            dislikeBtn.querySelector('.dislike-count').textContent = getRandomDislikeCount(item, true);
-            if (current === 'like') {
-                likeBtn.classList.remove('liked');
-                likeBtn.querySelector('.like-count').textContent = getRandomLikeCount(item, false);
-            }
-            showToast('👎 Dislike geplaatst');
-        }
-    });
-
-    saveBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        showToast('💾 Opgeslagen!');
-    });
-
-    commentBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openCommentsModal(mediaItem);
-    });
-
-    shareBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        currentShareItemId = mediaItem.id;
-        openShareMenu(mediaItem);
-    });
-
-    itemDiv.appendChild(actionButtons);
-    return itemDiv;
+    requestAnimationFrame(checkAndSnap);
 }
 
 // ---------- COMMENTS MODAL ----------
@@ -718,7 +479,7 @@ function openCommentsModal(mediaItem) {
             <div class="comment-body">
                 <div class="comment-author">
                     ${comment.author}
-                    ${comment.verified ? ' ✓' : ''}
+                    ${comment.verified ? '<span style="color: #3897f0;"> ✓</span>' : ''}
                     <span class="comment-time">${comment.time}</span>
                 </div>
                 <div class="comment-text">${comment.text}</div>
@@ -730,19 +491,19 @@ function openCommentsModal(mediaItem) {
         </div>
     `).join('');
     
+    const headerTitle = commentsModal.querySelector('h2');
+    headerTitle.innerHTML = `💬 Reacties <span style="color: #999; font-size: 0.9rem;">(${comments.length})</span>`;
+    
     commentsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeCommentsModal() {
     commentsModal.classList.remove('active');
+    document.querySelectorAll('.comment-btn.active').forEach(btn => {
+        btn.classList.remove('active');
+    });
     document.body.style.overflow = 'auto';
-}
-
-// ---------- SHARE MENU ----------
-function openShareMenu(mediaItem) {
-    shareMenu.classList.add('active');
-    document.body.style.overflow = 'hidden';
 }
 
 function closeShareMenu() {
@@ -750,26 +511,243 @@ function closeShareMenu() {
     document.body.style.overflow = 'auto';
 }
 
-// ---------- PROFIEL KLIK ----------
-document.getElementById('currentChannelProfile').addEventListener('click', (e) => {
-    const channelId = e.currentTarget.dataset.channelId;
-    if (channelId) {
-        showChannelVideos(channelId);
+// ---------- FEED ITEM CREATIE ----------
+function createFeedItem(mediaItem) {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'feed-item';
+    itemDiv.dataset.itemId = mediaItem.id;
+    itemDiv.dataset.type = mediaItem.type;
+    itemDiv.dataset.url = mediaItem.url;
+    itemDiv.dataset.channelId = mediaItem.channelId;
+
+    const mediaContainer = document.createElement('div');
+    mediaContainer.className = 'media-container';
+
+    let mediaEl;
+    if (mediaItem.type === 'video') {
+        mediaEl = document.createElement('video');
+        mediaEl.src = mediaItem.url;
+        setupVideo(mediaEl, itemDiv, mediaItem);
+    } else {
+        mediaEl = document.createElement('img');
+        mediaEl.src = mediaItem.url;
+        mediaEl.alt = mediaItem.title || 'AI afbeelding';
+        mediaEl.loading = 'lazy';
+        mediaEl.onerror = () => {
+            console.warn(`Afbeelding ${mediaItem.url} niet gevonden`);
+            itemDiv.remove();
+            maybeLoadMore();
+        };
+    }
+
+    mediaContainer.appendChild(mediaEl);
+    itemDiv.appendChild(mediaContainer);
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'item-info';
+    infoDiv.innerHTML = `
+        <div class="channel-name">
+            <a href="#" class="channel-link" data-channel-id="${mediaItem.channelId}">
+                @${mediaItem.channelId || mediaItem.channel}
+            </a>
+            <span class="content-badge">${mediaItem.contentType || 'AI'}</span>
+        </div>
+        <div class="title-description">
+            <strong>${mediaItem.title || ''}</strong> ${mediaItem.description ? '· ' + mediaItem.description : ''}
+        </div>
+    `;
+    itemDiv.appendChild(infoDiv);
+
+    const channelLink = infoDiv.querySelector('.channel-link');
+    channelLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        filterByChannel(mediaItem.channelId);
+    });
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.innerHTML = actionPanelTemplate;
+    const actionButtons = actionsDiv.firstElementChild.cloneNode(true);
+    
+    const profileBtn = actionButtons.querySelector('.profile-btn');
+    const likeBtn = actionButtons.querySelector('.like-btn');
+    const commentBtn = actionButtons.querySelector('.comment-btn');
+    const saveBtn = actionButtons.querySelector('.save-btn');
+    const shareBtn = actionButtons.querySelector('.share-btn');
+    
+    // Set profile image
+    const profileImg = profileBtn.querySelector('.profile-image');
+    if (mediaItem.profileImage) {
+        profileImg.src = mediaItem.profileImage;
+    }
+    
+    likeBtn.dataset.id = mediaItem.id;
+    saveBtn.dataset.id = mediaItem.id;
+    commentBtn.dataset.id = mediaItem.id;
+    shareBtn.dataset.id = mediaItem.id;
+
+    const userLiked = isItemLiked(mediaItem.id);
+    const saved = isItemSaved(mediaItem.id);
+    
+    const likeCountSpan = likeBtn.querySelector('.like-count');
+    const saveCountSpan = saveBtn.querySelector('.save-count');
+    const commentCountSpan = commentBtn.querySelector('.comment-count');
+    
+    const commentCount = Math.floor(Math.random() * 45) + 1;
+    commentCountSpan.textContent = commentCount;
+    
+    likeCountSpan.textContent = getRandomLikeCount(mediaItem, userLiked);
+    
+    if (saved) {
+        saveBtn.classList.add('saved');
+        saveCountSpan.textContent = '1';
+    } else {
+        saveCountSpan.textContent = '0';
+    }
+    
+    if (userLiked) {
+        likeBtn.classList.add('liked');
+    }
+
+    // EVENT LISTENERS
+    profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        showToast(`👤 @${mediaItem.channelId}`);
+        // Hier kun je later een profielpagina toevoegen
+    });
+
+    likeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const id = Number(likeBtn.dataset.id);
+        const liked = isItemLiked(id);
+        const item = videoDatabase.find(v => v.id === id);
+        
+        if (liked) {
+            setLike(id, false);
+            likeBtn.classList.remove('liked');
+            likeCountSpan.textContent = getRandomLikeCount(item, false);
+            showToast('❤️ Like verwijderd');
+        } else {
+            setLike(id, true);
+            likeBtn.classList.add('liked');
+            likeCountSpan.textContent = getRandomLikeCount(item, true);
+            showToast('❤️ Video geliked!');
+        }
+    });
+
+    saveBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const id = Number(saveBtn.dataset.id);
+        const isSaved = isItemSaved(id);
+        
+        if (isSaved) {
+            unsaveItemLocally(id);
+            saveBtn.classList.remove('saved');
+            saveCountSpan.textContent = '0';
+            showToast('❌ Verwijderd uit opgeslagen');
+        } else {
+            saveItemLocally(id);
+            saveBtn.classList.add('saved');
+            saveCountSpan.textContent = '1';
+            showToast('✅ Opgeslagen in Bobtop-lijst');
+        }
+    });
+
+    commentBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        openCommentsModal(mediaItem);
+        commentBtn.classList.add('active');
+    });
+
+    shareBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        openShareMenu(mediaItem);
+    });
+
+    itemDiv.appendChild(actionButtons);
+    return itemDiv;
+}
+
+// ---------- SHARE MENU ----------
+function openShareMenu(mediaItem) {
+    shareMenu.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    const whatsappBtn = document.getElementById('share-whatsapp');
+    const copyBtn = document.getElementById('share-copy');
+    const closeBtn = shareMenu.querySelector('.share-close');
+    
+    const newWhatsapp = whatsappBtn.cloneNode(true);
+    const newCopy = copyBtn.cloneNode(true);
+    const newClose = closeBtn.cloneNode(true);
+    whatsappBtn.parentNode.replaceChild(newWhatsapp, whatsappBtn);
+    copyBtn.parentNode.replaceChild(newCopy, copyBtn);
+    shareMenu.querySelector('.share-close').replaceWith(newClose);
+    
+    newWhatsapp.addEventListener('click', () => {
+        const text = `📱 Check dit filmpje op Bobtop: ${mediaItem.title} door @${mediaItem.channelId}`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+        closeShareMenu();
+        showToast('📤 Gedeeld via WhatsApp');
+    });
+    
+    newCopy.addEventListener('click', async () => {
+        const shareUrl = `${window.location.origin}${window.location.pathname}?video=${mediaItem.id}`;
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            showToast('🔗 Link gekopieerd naar klembord');
+        } catch {
+            const textarea = document.createElement('textarea');
+            textarea.value = shareUrl;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('🔗 Link gekopieerd');
+        }
+        closeShareMenu();
+    });
+    
+    newClose.addEventListener('click', closeShareMenu);
+}
+
+// ---------- MODAL EVENT LISTENERS ----------
+shareMenu.addEventListener('click', (e) => {
+    if (e.target === shareMenu) {
+        closeShareMenu();
     }
 });
+
+commentsModal.addEventListener('click', (e) => {
+    if (e.target === commentsModal) {
+        closeCommentsModal();
+    }
+});
+
+document.querySelector('.close-comments')?.addEventListener('click', closeCommentsModal);
+document.querySelector('.close-comments-btn')?.addEventListener('click', closeCommentsModal);
 
 // ---------- INFINITE SCROLL ----------
 let isLoading = false;
 let pendingLoad = false;
 
 function addItemToFeed() {
-    if (isLoading || isChannelView) return;
+    if (isLoading) return;
     isLoading = true;
     
     const item = getWeightedRandomItem();
     
     const lastItem = feedEl.lastChild;
     if (lastItem && lastItem.dataset.itemId == item.id) {
+        console.log('⚠️ Dubbele video voorkomen');
         isLoading = false;
         setTimeout(() => addItemToFeed(), 50);
         return;
@@ -798,100 +776,37 @@ function maybeLoadMore() {
 }
 
 const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting && !isChannelView) {
+    if (entries[0].isIntersecting) {
         maybeLoadMore();
     }
-}, { threshold: 0.1 });
+}, { threshold: 0.1, rootMargin: '100px' });
 observer.observe(sentinel);
 
-// ---------- SHARE EVENT LISTENERS ----------
-document.getElementById('share-whatsapp')?.addEventListener('click', () => {
-    const currentItem = videoDatabase.find(v => v.id === currentShareItemId);
-    if (currentItem) {
-        const text = `📱 Check dit filmpje op Bobtop: ${currentItem.title} door @${currentItem.channelId} - ${window.location.href}?video=${currentItem.id}`;
-        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-        showToast('📤 Gedeeld via WhatsApp');
-    }
-    closeShareMenu();
-});
-
-document.getElementById('share-discord')?.addEventListener('click', () => {
-    const currentItem = videoDatabase.find(v => v.id === currentShareItemId);
+// ---------- INIT ----------
+async function initFeed() {
+    await loadComments();
+    setupScrollSnap();
     
-    if (currentItem) {
-        const shareText = `**🎬 ${currentItem.title}**\n` +
-                         `**👤 Kanaal:** @${currentItem.channelId}\n` +
-                         `**📝 Beschrijving:** ${currentItem.description}\n` +
-                         `**🔗 Link:** ${window.location.origin}${window.location.pathname}?video=${currentItem.id}\n\n` +
-                         `_Gedeeld via Bobtop_ 📱`;
-        
-        navigator.clipboard.writeText(shareText).then(() => {
-            showToast('📋 Discord bericht gekopieerd!');
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('video');
+    
+    if (videoId) {
+        const found = videoDatabase.find(v => v.id === Number(videoId));
+        if (found) {
+            const feedItem = createFeedItem(found);
+            feedEl.appendChild(feedItem);
+            currentRenderedIds.add(found.id);
+            loadedItemCount++;
             
             setTimeout(() => {
-                if (confirm('📋 Bericht gekopieerd!\n\nWil je Discord openen om te plakken?')) {
-                    window.open('discord://', '_blank');
-                    setTimeout(() => {
-                        window.open('https://discord.com/channels/@me', '_blank');
-                    }, 1000);
-                }
+                feedItem.scrollIntoView({ behavior: 'smooth' });
             }, 100);
-        });
+        }
     }
-    closeShareMenu();
-});
-
-document.getElementById('share-copy')?.addEventListener('click', async () => {
-    const currentItem = videoDatabase.find(v => v.id === currentShareItemId);
-    const shareUrl = currentItem ? 
-        `${window.location.origin}${window.location.pathname}?video=${currentItem.id}` : 
-        window.location.href;
     
-    await navigator.clipboard.writeText(shareUrl);
-    showToast('🔗 Link gekopieerd!');
-    closeShareMenu();
-});
-
-document.querySelector('.share-close')?.addEventListener('click', closeShareMenu);
-
-// Modal event listeners
-commentsModal.addEventListener('click', (e) => {
-    if (e.target === commentsModal) {
-        closeCommentsModal();
-    }
-});
-
-document.querySelector('.close-comments')?.addEventListener('click', closeCommentsModal);
-document.querySelector('.close-comments-btn')?.addEventListener('click', closeCommentsModal);
-
-// ---------- INIT ----------
-async function init() {
-    await loadComments();
-    setupSearch();
-    
-    // Start met 3 random videos
     for (let i = 0; i < 3; i++) {
         addItemToFeed();
     }
-    
-    // Forceer eerste video afspelen
-    setTimeout(() => {
-        const firstVideo = document.querySelector('.feed-item video');
-        if (firstVideo) {
-            firstVideo.muted = false;
-            firstVideo.play().catch(e => console.log('Eerste video autoplay:', e));
-        }
-    }, 500);
 }
 
-init();
-
-// Cleanup
-window.addEventListener('beforeunload', () => {
-    document.querySelectorAll('.feed-item').forEach(item => {
-        if (item._videoObserver) {
-            item._videoObserver.disconnect();
-        }
-    });
-});
+initFeed();
