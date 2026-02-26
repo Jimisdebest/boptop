@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bobtop · AI filmpjes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header met logo en zoekbalk -->
+        <div class="header">
+            <div class="logo-container">
+                <img src="logo.png" alt="Bobtop" class="logo">
+                <span class="logo-text">BobTop</span>
+            </div>
+            <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Zoek naar videos, kanalen...">
+        </div>
+
+        <!-- Profielfoto rechts -->
+        <div class="channel-profile" id="currentChannelProfile" style="display: none;">
+            <img src="" alt="Channel profile" id="profileImage">
+        </div>
+
+        <!-- Mijn BobTop knop -->
+        <button class="my-bobtop-btn" id="myBobtopBtn">📋 Mijn BobTop</button>
+
+        <!-- Feed -->
+        <div id="feed" class="feed"></div>
+        <div class="bottom-sentinel" id="sentinel"></div>
+
+        <!-- Template voor actieknoppen -->
+        <div id="action-panel-template" style="display: none;">
+            <div class="action-buttons">
+                <div class="action-btn like-btn" aria-label="Like">
+                    <span class="emoji-icon">❤️</span>
+                    <span class="action-count like-count">0</span>
+                </div>
+                <div class="action-btn save-btn" aria-label="Opslaan in BobTop">
+                    <span class="emoji-icon">💾</span>
+                </div>
+                <div class="action-btn comment-btn" aria-label="Reacties">
+                    <span class="emoji-icon">💬</span>
+                    <span class="action-count comment-count">0</span>
+                </div>
+                <div class="action-btn share-btn" aria-label="Delen">
+                    <span class="emoji-icon">📤</span>
+                    <span class="action-count share-count">Deel</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMMENTS MODAL -->
+        <div id="comments-modal" class="comments-modal">
+            <div class="comments-content">
+                <div class="comments-header">
+                    <h2>💬 Reacties</h2>
+                    <button class="close-comments">&times;</button>
+                </div>
+                <div class="comments-list" id="comments-list"></div>
+                <div class="comments-input-container">
+                    <input type="text" id="commentInput" placeholder="Schrijf een reactie..." class="comment-input">
+                    <button id="sendCommentBtn" class="send-comment-btn">➤</button>
+                </div>
+                <div class="comments-footer">
+                    <button class="close-comments-btn">Sluiten</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deel menu -->
+        <div id="share-menu" class="share-menu">
+            <div class="share-menu-content">
+                <h3>📤 Delen via</h3>
+                <div class="share-options">
+                    <div class="share-option" id="share-whatsapp">
+                        <div class="share-icon whatsapp-icon">
+                            <span class="emoji-large">💬</span>
+                        </div>
+                        <span>WhatsApp</span>
+                    </div>
+                    <div class="share-option" id="share-discord">
+                        <div class="share-icon discord-icon">
+                            <span class="emoji-large">🎮</span>
+                        </div>
+                        <span>Discord</span>
+                    </div>
+                    <div class="share-option" id="share-copy">
+                        <div class="share-icon copy-icon">
+                            <span class="emoji-large">🔗</span>
+                        </div>
+                        <span>Link kopiëren</span>
+                    </div>
+                </div>
+                <button class="share-close">Annuleren</button>
+            </div>
+        </div>
+
+        <!-- Zoeksuggesties container -->
+        <div id="searchSuggestions" class="search-suggestions"></div>
+
+        <!-- Toast melding -->
+        <div id="toast" class="toast">✅ Opgeslagen!</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
