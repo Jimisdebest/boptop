@@ -257,13 +257,20 @@
         }
 
         .action-btn.liked {
-            color: #ff3b5c;
-            background: rgba(255, 59, 92, 0.2);
+            background: rgba(255, 59, 92, 0.3);
             border-color: #ff3b5c;
         }
 
-        .emoji-icon {
-            font-size: 28px;
+        .action-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        .action-count {
+            font-weight: bold;
+            font-size: 14px;
         }
 
         /* Comments Modal */
@@ -564,14 +571,14 @@
         <div id="action-panel-template" style="display: none;">
             <div class="action-buttons">
                 <div class="action-btn like-btn" aria-label="Like">
-                    <span class="emoji-icon">❤️</span>
+                    <img src="duimpje.png" alt="Like" class="action-icon" onerror="this.src='https://via.placeholder.com/32/ff3b5c/fff?text=👍'">
                 </div>
                 <div class="action-btn comment-btn" aria-label="Reacties">
-                    <span class="emoji-icon">💬</span>
+                    <img src="berichten.png" alt="Reacties" class="action-icon" onerror="this.src='https://via.placeholder.com/32/3897f0/fff?text=💬'">
                     <span class="action-count comment-count">0</span>
                 </div>
                 <div class="action-btn share-btn" aria-label="Delen">
-                    <span class="emoji-icon">📤</span>
+                    <img src="delen.png" alt="Delen" class="action-icon" onerror="this.src='https://via.placeholder.com/32/4caf50/fff?text=📤'">
                 </div>
             </div>
         </div>
