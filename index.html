@@ -107,44 +107,96 @@
             object-fit: contain;
         }
 
-        /* Video informatie overlay */
+        /* Profielfoto rechtsboven */
+        .profile-image {
+            position: fixed;
+            top: 70px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #ff3b5c;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            background: #333;
+            z-index: 1001;
+            display: none;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Video informatie overlay - dynamische grootte */
         .video-info {
             position: absolute;
             bottom: 30px;
             left: 20px;
-            right: 20px;
+            right: 80px; /* Ruimte voor profielfoto */
             color: white;
             z-index: 10;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 80%;
+        }
+
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .channel-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            overflow: hidden;
+            background: #333;
+            flex-shrink: 0;
+        }
+
+        .channel-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .channel-name {
-            display: inline-block;
-            background: rgba(255, 59, 92, 0.9);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
-            margin-bottom: 8px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Titels en beschrijving - passen zich aan aan inhoud */
+        .title-box {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: inline-block; /* Past zich aan aan tekst */
+            max-width: 100%;
+            width: fit-content;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .video-title {
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 4px;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 12px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
+            line-height: 1.3;
+            color: white;
         }
 
         .video-description {
             font-size: 14px;
             opacity: 0.9;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 12px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
+            margin-top: 4px;
+            color: #eee;
         }
 
         /* Toast */
@@ -188,6 +240,11 @@
             <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Zoek naar videos...">
         </div>
 
+        <!-- Profielfoto rechtsboven -->
+        <div class="profile-image" id="profileImage">
+            <img src="" alt="Profile" id="profileImg">
+        </div>
+
         <!-- Loading indicator -->
         <div id="loading" class="loading">📁 Videos laden uit videoinfo.txt...</div>
 
@@ -199,30 +256,9 @@
     </div>
 
     <script>
-        // Fallback video database voor als videoinfo.txt niet bestaat
-        const FALLBACK_VIDEOS = [
-            {
-                id: 1,
-                type: 'video',
-                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                channel: 'CleanGirlOfficial',
-                channelId: 'cleangirl',
-                title: 'Cleaning MacDonalds bathroom',
-                description: 'Today i am going to clean MacDonalds bathroom for free!'
-            },
-            {
-                id: 2,
-                type: 'video',
-                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-                channel: 'HEMA',
-                channelId: 'hema',
-                title: 'HEMA Regenboogrookworst',
-                description: 'Koop nu HEMA regenboogrookworst!'
-            }
-        ];
-
         let videoDatabase = [];
-        let allVideos = []; // Voor zoekfunctionaliteit
+        let allVideos = [];
+        let currentChannelId = null;
 
         // Toast melding
         function showToast(msg) {
@@ -232,6 +268,54 @@
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
+        // Parse bestandsnaam naar titel en artiest
+        function parseFilename(filename) {
+            // Verwijder pad en extensie
+            const name = filename.split('/').pop().split('\\').pop(); // Haal laatste deel na slash
+            const withoutExt = name.replace(/\.[^/.]+$/, ""); // Verwijder extensie
+            
+            // Splits op eerste min
+            const firstMinIndex = withoutExt.indexOf('-');
+            if (firstMinIndex === -1) {
+                // Geen min gevonden, gebruik hele naam als titel
+                return {
+                    artist: 'Onbekend',
+                    title: withoutExt.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                };
+            }
+            
+            // Artiest is eerste deel (in hoofdletters)
+            let artist = withoutExt.substring(0, firstMinIndex);
+            // Titel is de rest, vervang minnen door spaties
+            let title = withoutExt.substring(firstMinIndex + 1).replace(/-/g, ' ');
+            
+            // Formatteer titel: eerste letter van elk woord hoofdletter
+            title = title.replace(/\b\w/g, l => l.toUpperCase());
+            
+            return {
+                artist: artist,
+                title: title
+            };
+        }
+
+        // Update profielfoto
+        function updateProfilePicture(channelId) {
+            const profileDiv = document.getElementById('profileImage');
+            const profileImg = document.getElementById('profileImg');
+            
+            // ChannelId naar hoofdletters voor bestandsnaam
+            const upperChannelId = channelId.toUpperCase();
+            profileImg.src = `${upperChannelId}.png`;
+            
+            // Fallback als afbeelding niet bestaat
+            profileImg.onerror = () => {
+                profileImg.src = `https://via.placeholder.com/50/333/fff?text=${channelId[0].toUpperCase()}`;
+            };
+            
+            profileDiv.style.display = 'block';
+            currentChannelId = channelId;
+        }
+
         // Laad videoinfo.txt
         async function loadVideoInfo() {
             try {
@@ -239,26 +323,34 @@
                 if (!response.ok) throw new Error('videoinfo.txt niet gevonden');
                 
                 const text = await response.text();
-                console.log('📁 videoinfo.txt geladen:', text.substring(0, 200) + '...');
+                console.log('📁 videoinfo.txt geladen');
                 
-                // Parse het tekstbestand
                 const lines = text.split('\n');
                 const videos = [];
                 
                 lines.forEach((line, index) => {
                     line = line.trim();
-                    if (line && !line.startsWith('#')) { // Skip lege regels en comments
-                        // Verwacht formaat: url|channel|channelId|title|description
+                    if (line && !line.startsWith('#')) {
                         const parts = line.split('|');
-                        if (parts.length >= 5) {
+                        if (parts.length >= 1) {
+                            const url = parts[0].trim();
+                            const parsed = parseFilename(url);
+                            
+                            // Gebruik gegevens uit bestand of parse
+                            const channel = parts[1] ? parts[1].trim() : parsed.artist;
+                            const channelId = parts[2] ? parts[2].trim() : parsed.artist.toLowerCase();
+                            const title = parts[3] ? parts[3].trim() : parsed.title;
+                            const description = parts[4] ? parts[4].trim() : '';
+                            
                             videos.push({
                                 id: index + 1,
                                 type: 'video',
-                                url: parts[0].trim(),
-                                channel: parts[1].trim(),
-                                channelId: parts[2].trim(),
-                                title: parts[3].trim(),
-                                description: parts[4].trim()
+                                url: url,
+                                channel: channel,
+                                channelId: channelId,
+                                title: title,
+                                description: description,
+                                artistUpper: parsed.artist // Voor profielfoto
                             });
                         }
                     }
@@ -267,14 +359,26 @@
                 if (videos.length > 0) {
                     videoDatabase = videos;
                     allVideos = [...videos];
-                    console.log(`✅ ${videos.length} videos geladen uit videoinfo.txt`);
+                    console.log(`✅ ${videos.length} videos geladen`);
                 } else {
-                    throw new Error('Geen videos gevonden in bestand');
+                    throw new Error('Geen videos gevonden');
                 }
             } catch (error) {
-                console.warn('⚠️ Kon videoinfo.txt niet laden, gebruik fallback videos:', error);
-                videoDatabase = FALLBACK_VIDEOS;
-                allVideos = [...FALLBACK_VIDEOS];
+                console.warn('⚠️ Kon videoinfo.txt niet laden:', error);
+                // Fallback videos
+                videoDatabase = [
+                    {
+                        id: 1,
+                        type: 'video',
+                        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                        channel: 'CleanGirl',
+                        channelId: 'cleangirl',
+                        title: 'Cleaning MacDonalds bathroom',
+                        description: 'Today i am going to clean',
+                        artistUpper: 'CLEANGIRL'
+                    }
+                ];
+                allVideos = [...videoDatabase];
             }
             
             // Verwijder loading indicator
@@ -285,14 +389,17 @@
         }
 
         // Video setup met autoplay
-        function setupVideo(videoElement) {
+        function setupVideo(videoElement, channelId) {
             videoElement.loop = true;
             videoElement.playsInline = true;
-            videoElement.muted = true; // Muted voor autoplay
+            videoElement.muted = true;
             
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
+                        // Update profielfoto bij deze video
+                        updateProfilePicture(channelId);
+                        
                         // Pauzeer andere videos
                         document.querySelectorAll('.feed-item video').forEach(v => {
                             if (v !== videoElement) v.pause();
@@ -315,6 +422,7 @@
             const itemDiv = document.createElement('div');
             itemDiv.className = 'feed-item';
             itemDiv.dataset.itemId = mediaItem.id;
+            itemDiv.dataset.channelId = mediaItem.channelId;
 
             const mediaContainer = document.createElement('div');
             mediaContainer.className = 'media-container';
@@ -323,20 +431,58 @@
             videoEl.src = mediaItem.url;
             videoEl.poster = 'https://via.placeholder.com/1080x1920/333/fff?text=BobTop';
             
-            const observer = setupVideo(videoEl);
+            const observer = setupVideo(videoEl, mediaItem.channelId);
             itemDiv._videoObserver = observer;
 
             mediaContainer.appendChild(videoEl);
             itemDiv.appendChild(mediaContainer);
 
-            // Video informatie overlay
+            // Video informatie overlay - dynamisch
             const infoDiv = document.createElement('div');
             infoDiv.className = 'video-info';
-            infoDiv.innerHTML = `
-                <div class="channel-name">@${mediaItem.channelId}</div>
-                <div class="video-title">${mediaItem.title}</div>
-                <div class="video-description">${mediaItem.description}</div>
-            `;
+            
+            // Channel info met thumbnail
+            const channelInfo = document.createElement('div');
+            channelInfo.className = 'channel-info';
+            
+            const thumbDiv = document.createElement('div');
+            thumbDiv.className = 'channel-thumb';
+            const thumbImg = document.createElement('img');
+            
+            // Probeer profielfoto te laden (hoofdletters)
+            const upperChannelId = mediaItem.channelId.toUpperCase();
+            thumbImg.src = `${upperChannelId}.png`;
+            thumbImg.onerror = () => {
+                thumbImg.src = `https://via.placeholder.com/40/333/fff?text=${mediaItem.channelId[0].toUpperCase()}`;
+            };
+            
+            thumbDiv.appendChild(thumbImg);
+            channelInfo.appendChild(thumbDiv);
+            
+            const channelName = document.createElement('span');
+            channelName.className = 'channel-name';
+            channelName.textContent = mediaItem.channel;
+            channelInfo.appendChild(channelName);
+            
+            infoDiv.appendChild(channelInfo);
+            
+            // Titel box - past zich aan aan tekst
+            const titleBox = document.createElement('div');
+            titleBox.className = 'title-box';
+            
+            const titleEl = document.createElement('div');
+            titleEl.className = 'video-title';
+            titleEl.textContent = mediaItem.title;
+            titleBox.appendChild(titleEl);
+            
+            if (mediaItem.description) {
+                const descEl = document.createElement('div');
+                descEl.className = 'video-description';
+                descEl.textContent = mediaItem.description;
+                titleBox.appendChild(descEl);
+            }
+            
+            infoDiv.appendChild(titleBox);
             itemDiv.appendChild(infoDiv);
 
             return itemDiv;
@@ -345,23 +491,13 @@
         // Feed initialiseren
         function initFeed() {
             const feed = document.getElementById('feed');
-            
-            // Leeg de feed
             feed.innerHTML = '';
             
-            // Voeg alle videos toe
             videoDatabase.forEach(video => {
                 feed.appendChild(createFeedItem(video));
             });
             
             console.log('🎬 Feed geladen met', document.querySelectorAll('.feed-item').length, 'videos');
-            
-            // Check of scrollen mogelijk is
-            if (feed.scrollHeight > feed.clientHeight) {
-                console.log('✅ Scrollen mogelijk!');
-            } else {
-                console.log('⚠️ Weinig videos, scrollen beperkt');
-            }
             
             // Start eerste video
             setTimeout(() => {
@@ -383,7 +519,6 @@
                     const query = e.target.value.toLowerCase().trim();
                     
                     if (query === '') {
-                        // Toon alle videos
                         const feed = document.getElementById('feed');
                         feed.innerHTML = '';
                         allVideos.forEach(video => {
@@ -393,11 +528,10 @@
                         return;
                     }
                     
-                    // Zoek in videos
                     const matches = allVideos.filter(v => 
                         v.title.toLowerCase().includes(query) || 
-                        v.channelId.toLowerCase().includes(query) ||
-                        v.description.toLowerCase().includes(query)
+                        v.channel.toLowerCase().includes(query) ||
+                        v.channelId.toLowerCase().includes(query)
                     );
                     
                     if (matches.length > 0) {
@@ -413,7 +547,6 @@
                 }
             });
             
-            // Clear zoekopdracht met Escape
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     searchInput.value = '';
@@ -426,6 +559,21 @@
                 }
             });
         }
+
+        // Klik op profielfoto toont alleen videos van dat kanaal
+        document.getElementById('profileImage').addEventListener('click', () => {
+            if (currentChannelId) {
+                const channelVideos = allVideos.filter(v => v.channelId === currentChannelId);
+                if (channelVideos.length > 0) {
+                    const feed = document.getElementById('feed');
+                    feed.innerHTML = '';
+                    channelVideos.forEach(video => {
+                        feed.appendChild(createFeedItem(video));
+                    });
+                    showToast(`📺 ${channelVideos.length} videos van @${currentChannelId}`);
+                }
+            }
+        });
 
         // Start
         loadVideoInfo();
