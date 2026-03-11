@@ -1,9 +1,9 @@
 # FORMAAT: url | channel | channelId | titel | beschrijving
 CLEANGIRL-cleaning-macdonalds-bathroom-for-free.mp4
-DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4|Dripskipper|dripskipper|Yo ik ben snelle dripper|Zie mijn drippak
-https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4|FunnyAI|funnyai|IK GA JE PAKKEN!|Hilarische AI video - niet alleen kijken voor het slapen gaan
-https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4|MINECRAFTMODS|minecraftmods|Hoe je een mod installeert|Een eenvoudige uitleg voor how to
-https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4|DripSkipper|dripskipper|Zie mijn drippak|Ik ben #DripSkipper en ik heb een drippak
-https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4|Naturevideo's|naturevideos|See the sea|De zee in india, zo prachtig!
-https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4|Naturevideo's|naturevideos|See the strand|Het strand in afrika, het was er koud!
-https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4|FunnyAI|funnyai|Ik ben een paard|Ik ga pindakaas koekjes eten
+DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4
+FUNNYAI-ik-ga-je-pakken.mp4
+MINECRAFTMODS-hoe-je-een-mod-installeert.mp4
+DRIPSKIPPERzie-mijn-drip-pak.mp4
+NATUREVIDEOS-see-the-see.mp4
+NATUREVIDEOS-see-the-strand.mp4
+FUNNYAI-ik-ben-een-paard-en-ik-ga-pindakaaskoekjes-eten.mp4
