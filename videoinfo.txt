@@ -1,6 +1,4 @@
 # FORMAAT: url|kanaalnaam|channelId|titel|beschrijving
-# (channelId wordt gebruikt voor profielfoto, bv: CLEANGIRL.png)
-
 CLEANGIRL-cleaning-macdonalds-bathroom-for-free.mp4|CleanGirlOfficial|cleangirl|Cleaning MacDonalds bathroom|Today I'm going to clean MacDonalds bathroom for free!
 DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4|DripSkipper|dripskipper|Yo! Ik ben snelle dripper|Check mijn nieuwe drip!
 FUNNYAI-ik-ga-je-pakken.mp4|FunnyAI|funnyai|IK GA JE PAKKEN!|Hilarische AI video - niet kijken voor het slapen gaan
