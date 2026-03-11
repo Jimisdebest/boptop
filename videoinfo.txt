@@ -1,9 +1,11 @@
-# FORMAAT: url | channel | channelId | titel | beschrijving
-CLEANGIRL-cleaning-macdonalds-bathroom-for-free.mp4
-DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4
-FUNNYAI-ik-ga-je-pakken.mp4
-MINECRAFTMODS-hoe-je-een-mod-installeert.mp4
-DRIPSKIPPERzie-mijn-drip-pak.mp4
-NATUREVIDEOS-see-the-see.mp4
-NATUREVIDEOS-see-the-strand.mp4
-FUNNYAI-ik-ben-een-paard-en-ik-ga-pindakaaskoekjes-eten.mp4
+# FORMAAT: url|kanaalnaam|channelId|titel|beschrijving
+# (channelId wordt gebruikt voor profielfoto, bv: CLEANGIRL.png)
+
+CLEANGIRL-cleaning-macdonalds-bathroom-for-free.mp4|CleanGirlOfficial|cleangirl|Cleaning MacDonalds bathroom|Today I'm going to clean MacDonalds bathroom for free!
+DRIPSKIPPER-yo-ik-ben-snelle-dripper.mp4|DripSkipper|dripskipper|Yo! Ik ben snelle dripper|Check mijn nieuwe drip!
+FUNNYAI-ik-ga-je-pakken.mp4|FunnyAI|funnyai|IK GA JE PAKKEN!|Hilarische AI video - niet kijken voor het slapen gaan
+MINECRAFTMODS-hoe-je-een-mod-installeert.mp4|MinecraftMods|minecraftmods|Hoe je een mod installeert|Stap voor stap uitleg voor beginners
+DRIPSKIPPERzie-mijn-drip-pak.mp4|DripSkipper|dripskipper|Zie mijn drip pak|Mijn nieuwe outfit is echt fire!
+NATUREVIDEOS-see-the-see.mp4|NatureVideos|naturevideos|See the sea|Prachtige beelden van de zee
+NATUREVIDEOS-see-the-strand.mp4|NatureVideos|naturevideos|See the strand|Het strand in al zijn glorie
+FUNNYAI-ik-ben-een-paard-en-ik-ga-pindakaaskoekjes-eten.mp4|FunnyAI|funnyai|Ik ben een paard|Ik ga pindakaaskoekjes eten!
