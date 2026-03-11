@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bobtop · AI filmpjes</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: black;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: black;
+        }
+
+        /* Header met logo en zoekbalk */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            gap: 10px;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            height: 70px;
+            pointer-events: none;
+        }
+
+        .header > * {
+            pointer-events: auto;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            padding: 5px 10px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .search-bar {
+            flex: 1;
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 12px 15px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-bar::placeholder {
+            color: #999;
+        }
+
+        /* FEED */
+        .feed {
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background: black;
+            scroll-snap-type: y mandatory;
+        }
+
+        /* Scrollbar verbergen maar functionaliteit behouden */
+        .feed::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .feed {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .feed-item {
+            width: 100%;
+            height: 100vh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            background: black;
+        }
+
+        /* Media container */
+        .media-container {
+            width: 100%;
+            height: 100%;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .media-container video,
+        .media-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Profielfoto rechtsboven */
+        .profile-image {
+            position: fixed;
+            top: 80px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            background: #333;
+            z-index: 1001;
+            display: none;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Video informatie overlay */
+        .video-info {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            right: 80px;
+            color: white;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 80%;
+        }
+
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .channel-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            overflow: hidden;
+            background: #333;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .channel-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .channel-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .title-box {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: inline-block;
+            max-width: 100%;
+            width: fit-content;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .video-title {
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.3;
+            color: white;
+        }
+
+        .video-description {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 4px;
+            color: #eee;
+        }
+
+        /* Action buttons rechts */
+        .action-buttons {
+            position: absolute;
+            bottom: 100px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 20;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            color: white;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 10px 8px;
+            border-radius: 30px;
+            min-width: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn.liked {
+            background: rgba(255, 59, 92, 0.3);
+            border-color: #ff3b5c;
+        }
+
+        .action-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        .action-count {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Comments Modal */
+        .comments-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .comments-modal.active {
+            display: flex;
+        }
+
+        .comments-content {
+            width: 100%;
+            max-width: 500px;
+            background: #1a1a1a;
+            border-radius: 20px 20px 0 0;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .close-comments {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .comments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            min-height: 300px;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            background: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .comment-body {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .comment-time {
+            color: #999;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .comment-text {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #eee;
+        }
+
+        .comments-input-container {
+            display: flex;
+            padding: 15px;
+            gap: 10px;
+            border-top: 1px solid #333;
+        }
+
+        .comment-input {
+            flex: 1;
+            background: #333;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 15px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .send-comment-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #3897f0;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .comments-footer {
+            padding: 15px;
+            border-top: 1px solid #333;
+        }
+
+        .close-comments-btn {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Share Menu */
+        .share-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .share-menu.active {
+            display: flex;
+        }
+
+        .share-menu-content {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            color: white;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .share-menu-content h3 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .share-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 15px 10px;
+            border-radius: 15px;
+            background: #333;
+            flex: 1;
+            min-width: 80px;
+            transition: background 0.2s;
+        }
+
+        .share-option:active {
+            background: #444;
+        }
+
+        .share-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .whatsapp-icon {
+            background: #25D366;
+        }
+
+        .copy-icon {
+            background: #3897f0;
+        }
+
+        .share-close {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 3000;
+            transition: transform 0.3s ease;
+            border: 1px solid white;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Loading indicator */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header met logo en zoekbalk -->
+        <div class="header">
+            <div class="logo-container">
+                <img src="logo.png" alt="Bobtop" class="logo" onerror="this.src='https://via.placeholder.com/40/ff3b5c/fff?text=B'">
+                <span class="logo-text">BobTop</span>
+            </div>
+            <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Zoek naar videos...">
+        </div>
+
+        <!-- Profielfoto rechtsboven -->
+        <div class="profile-image" id="profileImage">
+            <img src="" alt="Profile" id="profileImg">
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loading" class="loading">📁 Videos laden uit videoinfo.txt...</div>
+
+        <!-- FEED -->
+        <div id="feed" class="feed"></div>
+
+        <!-- Template voor actieknoppen -->
+        <div id="action-panel-template" style="display: none;">
+            <div class="action-buttons">
+                <div class="action-btn like-btn" aria-label="Like">
+                    <img src="duimpje.png" alt="Like" class="action-icon" onerror="this.src='https://via.placeholder.com/32/ff3b5c/fff?text=👍'">
+                </div>
+                <div class="action-btn comment-btn" aria-label="Reacties">
+                    <img src="berichten.png" alt="Reacties" class="action-icon" onerror="this.src='https://via.placeholder.com/32/3897f0/fff?text=💬'">
+                    <span class="action-count comment-count">0</span>
+                </div>
+                <div class="action-btn share-btn" aria-label="Delen">
+                    <img src="delen.png" alt="Delen" class="action-icon" onerror="this.src='https://via.placeholder.com/32/4caf50/fff?text=📤'">
+                </div>
+            </div>
+        </div>
+
+        <!-- COMMENTS MODAL -->
+        <div id="comments-modal" class="comments-modal">
+            <div class="comments-content">
+                <div class="comments-header">
+                    <h2>💬 Reacties</h2>
+                    <button class="close-comments">&times;</button>
+                </div>
+                <div class="comments-list" id="comments-list"></div>
+                <div class="comments-input-container">
+                    <input type="text" id="commentInput" placeholder="Schrijf een reactie..." class="comment-input">
+                    <button id="sendCommentBtn" class="send-comment-btn">➤</button>
+                </div>
+                <div class="comments-footer">
+                    <button class="close-comments-btn">Sluiten</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SHARE MENU -->
+        <div id="share-menu" class="share-menu">
+            <div class="share-menu-content">
+                <h3>📤 Delen via</h3>
+                <div class="share-options">
+                    <div class="share-option" id="share-whatsapp">
+                        <div class="share-icon whatsapp-icon">💬</div>
+                        <span>WhatsApp</span>
+                    </div>
+                    <div class="share-option" id="share-copy">
+                        <div class="share-icon copy-icon">🔗</div>
+                        <span>Link kopiëren</span>
+                    </div>
+                </div>
+                <button class="share-close">Annuleren</button>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div id="toast" class="toast">✅</div>
+    </div>
+
+    <script>
+        // Comments database
+        const commentsDatabase = [
+            "Dit is echt top gemaakt! 🔥",
+            "Eerste! 🙋‍♂️",
+            "😂😂😂 geweldig",
+            "IK GA JE PAKKEN! 👻",
+            "FunnyAI is de beste!",
+            "Echt AI? Niet te geloven",
+            "Hahaha geniaal dit",
+            "Like voor deel 2!",
+            "Helemaal top 👌",
+            "Komt goed!",
+            "Ga zo door!",
+            "Dit is geweldig",
+            "Meer hiervan!",
+            "Wat leuk!",
+            "Super vet!"
+        ];
+
+        let videoDatabase = [];
+        let allVideos = [];
+        let currentChannelId = null;
+        let currentCommentVideoId = null;
+        let currentShareItemId = null;
+        const videoComments = new Map();
+        const LIKE_DISLIKE_KEY = 'bobtop_preferences';
+        let preloadVideo = null; // Voor preload van volgende video
+
+        // Toast melding
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Like preferences
+        function getPreferences() {
+            try { return JSON.parse(localStorage.getItem(LIKE_DISLIKE_KEY)) || {}; } 
+            catch { return {}; }
+        }
+
+        function setPreference(itemId, type) {
+            const prefs = getPreferences();
+            if (type === null) delete prefs[itemId];
+            else prefs[itemId] = type;
+            localStorage.setItem(LIKE_DISLIKE_KEY, JSON.stringify(prefs));
+        }
+
+        function getPreference(itemId) {
+            return getPreferences()[itemId] || null;
+        }
+
+        // Random gebruikersnaam genereren voor comments
+        function generateUsername() {
+            const prefixes = ['@bobfan', '@kijker', '@user', '@filmliefhebber', '@bobtop', '@video'];
+            const suffixes = ['123', '007', 'nl', 'lover', 'fan', 'xd'];
+            return prefixes[Math.floor(Math.random() * prefixes.length)] + 
+                   suffixes[Math.floor(Math.random() * suffixes.length)] +
+                   Math.floor(Math.random() * 100);
+        }
+
+        // Random tijd genereren
+        function getRandomTime() {
+            const hours = Math.floor(Math.random() * 24);
+            const days = Math.floor(Math.random() * 7);
+            if (days === 0) return `${hours}u geleden`;
+            if (days === 1) return 'Gisteren';
+            return `${days} dagen geleden`;
+        }
+
+        // Willekeurige comments genereren voor een video
+        function getRandomCommentsForVideo(videoId) {
+            if (videoComments.has(videoId)) {
+                return videoComments.get(videoId);
+            }
+            
+            const numberOfComments = Math.floor(Math.random() * 20) + 5;
+            const comments = [];
+            
+            for (let i = 0; i < numberOfComments; i++) {
+                const randomComment = commentsDatabase[Math.floor(Math.random() * commentsDatabase.length)];
+                comments.push({
+                    id: `comment-${videoId}-${i}-${Date.now()}`,
+                    text: randomComment,
+                    author: generateUsername(),
+                    avatar: randomComment[0].toUpperCase(),
+                    time: getRandomTime(),
+                    likes: Math.floor(Math.random() * 50)
+                });
+            }
+            
+            comments.sort((a, b) => {
+                if (a.time === 'Zojuist') return -1;
+                if (b.time === 'Zojuist') return 1;
+                return 0;
+            });
+            
+            videoComments.set(videoId, comments);
+            return comments;
+        }
+
+        // Parse bestandsnaam naar titel en artiest
+        function parseFilename(filename) {
+            const name = filename.split('/').pop().split('\\').pop();
+            const withoutExt = name.replace(/\.[^/.]+$/, "");
+            
+            const firstMinIndex = withoutExt.indexOf('-');
+            if (firstMinIndex === -1) {
+                return {
+                    artist: 'Onbekend',
+                    title: withoutExt.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                };
+            }
+            
+            let artist = withoutExt.substring(0, firstMinIndex);
+            let title = withoutExt.substring(firstMinIndex + 1).replace(/-/g, ' ');
+            title = title.replace(/\b\w/g, l => l.toUpperCase());
+            
+            return {
+                artist: artist,
+                title: title
+            };
+        }
+
+        // Check of video bestaat
+        function videoExists(url) {
+            return new Promise((resolve) => {
+                const video = document.createElement('video');
+                video.oncanplaythrough = () => {
+                    video.remove();
+                    resolve(true);
+                };
+                video.onerror = () => {
+                    video.remove();
+                    resolve(false);
+                };
+                video.src = url;
+            });
+        }
+
+        // Update profielfoto
+        function updateProfilePicture(channelId) {
+            const profileDiv = document.getElementById('profileImage');
+            const profileImg = document.getElementById('profileImg');
+            
+            const upperChannelId = channelId.toUpperCase();
+            profileImg.src = `${upperChannelId}.png`;
+            
+            profileImg.onerror = () => {
+                profileImg.src = `https://via.placeholder.com/50/333/fff?text=${channelId[0].toUpperCase()}`;
+            };
+            
+            profileDiv.style.display = 'block';
+            currentChannelId = channelId;
+        }
+
+        // Laad videoinfo.txt en filter bestaande videos
+        async function loadVideoInfo() {
+            try {
+                const response = await fetch('videoinfo.txt');
+                if (!response.ok) throw new Error('videoinfo.txt niet gevonden');
+                
+                const text = await response.text();
+                console.log('📁 videoinfo.txt geladen');
+                
+                const lines = text.split('\n');
+                const videos = [];
+                
+                // Eerst alle videos inladen
+                for (const line of lines) {
+                    line = line.trim();
+                    if (line && !line.startsWith('#')) {
+                        const parts = line.split('|');
+                        if (parts.length >= 1) {
+                            const url = parts[0].trim();
+                            
+                            // Check of video bestaat
+                            const exists = await videoExists(url);
+                            if (!exists) {
+                                console.log(`⚠️ Video niet gevonden: ${url}`);
+                                continue; // Sla over als video niet bestaat
+                            }
+                            
+                            const parsed = parseFilename(url);
+                            
+                            const channel = parts[1] ? parts[1].trim() : parsed.artist;
+                            const channelId = parts[2] ? parts[2].trim() : parsed.artist.toLowerCase();
+                            const title = parts[3] ? parts[3].trim() : parsed.title;
+                            const description = parts[4] ? parts[4].trim() : '';
+                            
+                            videos.push({
+                                id: videos.length + 1,
+                                type: 'video',
+                                url: url,
+                                channel: channel,
+                                channelId: channelId,
+                                title: title,
+                                description: description,
+                                artistUpper: parsed.artist
+                            });
+                        }
+                    }
+                }
+                
+                if (videos.length > 0) {
+                    videoDatabase = videos;
+                    allVideos = [...videos];
+                    console.log(`✅ ${videos.length} videos geladen (niet-bestaande overgeslagen)`);
+                } else {
+                    throw new Error('Geen videos gevonden');
+                }
+            } catch (error) {
+                console.warn('⚠️ Kon videoinfo.txt niet laden:', error);
+                showToast('⚠️ Geen videos gevonden');
+                videoDatabase = [];
+                allVideos = [];
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+            
+            if (videoDatabase.length > 0) {
+                initFeed();
+            }
+        }
+
+        // Video setup met autoplay en preload
+        function setupVideo(videoElement, channelId) {
+            videoElement.loop = true;
+            videoElement.playsInline = true;
+            videoElement.muted = true;
+            videoElement.preload = 'auto'; // Voorladen
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        updateProfilePicture(channelId);
+                        
+                        document.querySelectorAll('.feed-item video').forEach(v => {
+                            if (v !== videoElement) v.pause();
+                        });
+                        
+                        videoElement.play().catch(e => console.log('Play error:', e));
+                        
+                        // Preload volgende video
+                        const nextItem = document.querySelector(`.feed-item[data-item-id="${parseInt(entry.target.closest('.feed-item').dataset.itemId) + 1}"] video`);
+                        if (nextItem) {
+                            nextItem.preload = 'auto';
+                        }
+                    } else {
+                        videoElement.pause();
+                    }
+                });
+            }, { threshold: 0.7 });
+            
+            observer.observe(videoElement);
+            return observer;
+        }
+
+        // Open comments modal
+        function openCommentsModal(videoId) {
+            currentCommentVideoId = videoId;
+            const comments = getRandomCommentsForVideo(videoId);
+            
+            const commentsList = document.getElementById('comments-list');
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-avatar">${comment.avatar}</div>
+                    <div class="comment-body">
+                        <div class="comment-author">
+                            ${comment.author}
+                            <span class="comment-time">${comment.time}</span>
+                        </div>
+                        <div class="comment-text">${comment.text}</div>
+                        <div class="comment-actions">
+                            <span>❤️ ${comment.likes}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('comments-modal').classList.add('active');
+        }
+
+        // Close comments modal
+        function closeCommentsModal() {
+            document.getElementById('comments-modal').classList.remove('active');
+        }
+
+        // Open share menu
+        function openShareMenu(videoId) {
+            currentShareItemId = videoId;
+            document.getElementById('share-menu').classList.add('active');
+        }
+
+        // Close share menu
+        function closeShareMenu() {
+            document.getElementById('share-menu').classList.remove('active');
+        }
+
+        // Random video selectie (geen volgorde)
+        function getRandomVideo() {
+            if (allVideos.length === 0) return null;
+            const randomIndex = Math.floor(Math.random() * allVideos.length);
+            return allVideos[randomIndex];
+        }
+
+        // Feed item aanmaken
+        function createFeedItem(mediaItem) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'feed-item';
+            itemDiv.dataset.itemId = mediaItem.id;
+            itemDiv.dataset.channelId = mediaItem.channelId;
+
+            const mediaContainer = document.createElement('div');
+            mediaContainer.className = 'media-container';
+
+            const videoEl = document.createElement('video');
+            videoEl.src = mediaItem.url;
+            videoEl.poster = 'https://via.placeholder.com/1080x1920/333/fff?text=BobTop';
+            
+            const observer = setupVideo(videoEl, mediaItem.channelId);
+            itemDiv._videoObserver = observer;
+
+            mediaContainer.appendChild(videoEl);
+            itemDiv.appendChild(mediaContainer);
+
+            // Video informatie overlay
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'video-info';
+            
+            const channelInfo = document.createElement('div');
+            channelInfo.className = 'channel-info';
+            
+            const thumbDiv = document.createElement('div');
+            thumbDiv.className = 'channel-thumb';
+            const thumbImg = document.createElement('img');
+            
+            const upperChannelId = mediaItem.channelId.toUpperCase();
+            thumbImg.src = `${upperChannelId}.png`;
+            thumbImg.onerror = () => {
+                thumbImg.src = `https://via.placeholder.com/40/333/fff?text=${mediaItem.channelId[0].toUpperCase()}`;
+            };
+            
+            thumbDiv.appendChild(thumbImg);
+            channelInfo.appendChild(thumbDiv);
+            
+            const channelName = document.createElement('span');
+            channelName.className = 'channel-name';
+            channelName.textContent = mediaItem.channel;
+            channelName.addEventListener('click', () => {
+                showChannelVideos(mediaItem.channelId);
+            });
+            channelInfo.appendChild(channelName);
+            
+            infoDiv.appendChild(channelInfo);
+            
+            const titleBox = document.createElement('div');
+            titleBox.className = 'title-box';
+            
+            const titleEl = document.createElement('div');
+            titleEl.className = 'video-title';
+            titleEl.textContent = mediaItem.title;
+            titleBox.appendChild(titleEl);
+            
+            if (mediaItem.description) {
+                const descEl = document.createElement('div');
+                descEl.className = 'video-description';
+                descEl.textContent = mediaItem.description;
+                titleBox.appendChild(descEl);
+            }
+            
+            infoDiv.appendChild(titleBox);
+            itemDiv.appendChild(infoDiv);
+
+            // Action buttons
+            const actionsDiv = document.createElement('div');
+            actionsDiv.innerHTML = document.getElementById('action-panel-template').innerHTML;
+            const actionButtons = actionsDiv.firstElementChild.cloneNode(true);
+            
+            const likeBtn = actionButtons.querySelector('.like-btn');
+            const commentBtn = actionButtons.querySelector('.comment-btn');
+            const shareBtn = actionButtons.querySelector('.share-btn');
+            
+            likeBtn.dataset.id = mediaItem.id;
+            commentBtn.dataset.id = mediaItem.id;
+            shareBtn.dataset.id = mediaItem.id;
+            
+            // Check of video al geliked is
+            const pref = getPreference(mediaItem.id);
+            if (pref === 'like') {
+                likeBtn.classList.add('liked');
+            }
+            
+            // Aantal comments
+            const comments = getRandomCommentsForVideo(mediaItem.id);
+            commentBtn.querySelector('.comment-count').textContent = comments.length;
+
+            // Event listeners
+            likeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = Number(likeBtn.dataset.id);
+                const current = getPreference(id);
+                
+                if (current === 'like') {
+                    setPreference(id, null);
+                    likeBtn.classList.remove('liked');
+                    showToast('❤️ Like verwijderd');
+                } else {
+                    setPreference(id, 'like');
+                    likeBtn.classList.add('liked');
+                    showToast('❤️ Video geliked!');
+                }
+            });
+
+            commentBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openCommentsModal(mediaItem.id);
+            });
+
+            shareBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openShareMenu(mediaItem.id);
+            });
+
+            itemDiv.appendChild(actionButtons);
+            return itemDiv;
+        }
+
+        // Toon alleen videos van een bepaald kanaal
+        function showChannelVideos(channelId) {
+            const channelVideos = allVideos.filter(v => v.channelId === channelId);
+            if (channelVideos.length > 0) {
+                const feed = document.getElementById('feed');
+                feed.innerHTML = '';
+                channelVideos.forEach(video => {
+                    feed.appendChild(createFeedItem(video));
+                });
+                showToast(`📺 ${channelVideos.length} videos van @${channelId}`);
+            }
+        }
+
+        // Feed initialiseren - ONEINDIGE SCROLL
+        function initFeed() {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = '';
+            
+            if (allVideos.length === 0) {
+                showToast('❌ Geen videos beschikbaar');
+                return;
+            }
+            
+            // Start met 1 video
+            const firstVideo = getRandomVideo();
+            feed.appendChild(createFeedItem(firstVideo));
+            
+            console.log('🎬 Feed gestart met 1 video');
+            
+            setTimeout(() => {
+                const firstVideoEl = document.querySelector('.feed-item video');
+                if (firstVideoEl) {
+                    firstVideoEl.play().catch(e => console.log('Eerste video play error:', e));
+                }
+            }, 500);
+            
+            showToast(`🎬 ${allVideos.length} videos beschikbaar`);
+        }
+
+        // Oneindige scroll - nieuwe video toevoegen wanneer nodig
+        function setupInfiniteScroll() {
+            const feed = document.getElementById('feed');
+            
+            feed.addEventListener('scroll', () => {
+                // Als we bijna onderaan zijn (laatste 20%)
+                if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - (feed.clientHeight * 0.2)) {
+                    // Voeg een nieuwe random video toe
+                    const nextVideo = getRandomVideo();
+                    if (nextVideo) {
+                        // Check of deze video al in de feed zit
+                        const existingIds = new Set([...document.querySelectorAll('.feed-item')].map(el => parseInt(el.dataset.itemId)));
+                        if (!existingIds.has(nextVideo.id)) {
+                            feed.appendChild(createFeedItem(nextVideo));
+                            console.log('➕ Nieuwe video toegevoegd:', nextVideo.title);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Zoekfunctionaliteit
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const query = e.target.value.toLowerCase().trim();
+                    
+                    if (query === '') {
+                        const feed = document.getElementById('feed');
+                        feed.innerHTML = '';
+                        // Start weer met 1 random video
+                        const randomVideo = getRandomVideo();
+                        if (randomVideo) {
+                            feed.appendChild(createFeedItem(randomVideo));
+                        }
+                        showToast(`🎬 Willekeurige video`);
+                        return;
+                    }
+                    
+                    const matches = allVideos.filter(v => 
+                        v.title.toLowerCase().includes(query) || 
+                        v.channel.toLowerCase().includes(query) ||
+                        v.channelId.toLowerCase().includes(query)
+                    );
+                    
+                    if (matches.length > 0) {
+                        const feed = document.getElementById('feed');
+                        feed.innerHTML = '';
+                        matches.forEach(video => {
+                            feed.appendChild(createFeedItem(video));
+                        });
+                        showToast(`🔍 ${matches.length} resultaten`);
+                    } else {
+                        showToast('❌ Geen resultaten');
+                    }
+                }
+            });
+            
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    const feed = document.getElementById('feed');
+                    feed.innerHTML = '';
+                    const randomVideo = getRandomVideo();
+                    if (randomVideo) {
+                        feed.appendChild(createFeedItem(randomVideo));
+                    }
+                    showToast(`🎬 Willekeurige video`);
+                }
+            });
+        }
+
+        // Modal close handlers
+        document.querySelector('.close-comments')?.addEventListener('click', closeCommentsModal);
+        document.querySelector('.close-comments-btn')?.addEventListener('click', closeCommentsModal);
+        
+        document.querySelector('.share-close')?.addEventListener('click', closeShareMenu);
+
+        // Click outside to close
+        document.getElementById('comments-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('comments-modal')) {
+                closeCommentsModal();
+            }
+        });
+
+        document.getElementById('share-menu').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('share-menu')) {
+                closeShareMenu();
+            }
+        });
+
+        // Send comment
+        document.getElementById('sendCommentBtn')?.addEventListener('click', () => {
+            const input = document.getElementById('commentInput');
+            const commentText = input.value.trim();
+            
+            if (commentText && currentCommentVideoId) {
+                const comments = videoComments.get(currentCommentVideoId) || [];
+                const newComment = {
+                    id: `comment-new-${Date.now()}`,
+                    text: commentText,
+                    author: 'Jij',
+                    avatar: 'J',
+                    time: 'Zojuist',
+                    likes: 0
+                };
+                comments.unshift(newComment);
+                videoComments.set(currentCommentVideoId, comments);
+                
+                const commentsList = document.getElementById('comments-list');
+                commentsList.innerHTML = comments.map(comment => `
+                    <div class="comment-item">
+                        <div class="comment-avatar">${comment.avatar}</div>
+                        <div class="comment-body">
+                            <div class="comment-author">
+                                ${comment.author}
+                                <span class="comment-time">${comment.time}</span>
+                            </div>
+                            <div class="comment-text">${comment.text}</div>
+                            <div class="comment-actions">
+                                <span>❤️ ${comment.likes}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                input.value = '';
+                showToast('💬 Reactie geplaatst!');
+            }
+        });
+
+        // Enter to send comment
+        document.getElementById('commentInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('sendCommentBtn').click();
+            }
+        });
+
+        // Share handlers
+        document.getElementById('share-whatsapp')?.addEventListener('click', () => {
+            const video = allVideos.find(v => v.id === currentShareItemId);
+            if (video) {
+                const text = `📱 Bobtop: ${video.title} door ${video.channel}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                showToast('📤 Gedeeld via WhatsApp');
+            }
+            closeShareMenu();
+        });
+
+        document.getElementById('share-copy')?.addEventListener('click', async () => {
+            const video = allVideos.find(v => v.id === currentShareItemId);
+            if (video) {
+                const text = `🎬 Bobtop - ${video.title}\n👤 Kanaal: ${video.channel}\n${window.location.href}`;
+                await navigator.clipboard.writeText(text);
+                showToast('🔗 Link gekopieerd!');
+            }
+            closeShareMenu();
+        });
+
+        // Klik op profielfoto toont alleen videos van dat kanaal
+        document.getElementById('profileImage').addEventListener('click', () => {
+            if (currentChannelId) {
+                showChannelVideos(currentChannelId);
+            }
+        });
+
+        // Start
+        loadVideoInfo();
+        setupSearch();
+        setupInfiniteScroll();
+    </script>
+</body>
+</html>
